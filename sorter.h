@@ -1,7 +1,7 @@
 // For the movie data set I counted 28 columns, but for a general CSV,
 // I would need the # of columns as meta data.
 // Suggestion: define a struct that mirrors a record (row) of the data set
-typedef struct data_row{
+typedef struct data_rows{
   // I figure we can track all of the values as integers for sorting.
   char * color;
   char * director_name;
