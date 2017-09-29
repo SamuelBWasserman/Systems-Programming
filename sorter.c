@@ -10,21 +10,30 @@ int main(int argc, char **(argv)){
     		return 0;
   	}
 	data_row db[5100]; // enough space to store every row
-	// Initialize empty row that stdin will populate
-	data_row *row = (data_row*)malloc(sizeof(data_row));
+	data_row *row = (data_row*)malloc(sizeof(data_row)); // Initialize empty data row
 	fscanf(stdin, "%*[^\n]"); // Read and discard a line
-    char line[350];
-    char first_line[350];
-    fgets(first_line,350,stdin);
-    int line_counter = 0;
-    int word_counter = 0;
-	while(fgets(line,350,stdin) != NULL){
+    char line[400]; // one line from the file
+    char first_line[400];
+    fgets(first_line,400,stdin);// discard first line
+    int line_counter = 0; // count what line we're on to keep track of the struct array
+    int word_counter = 0; // keep track of what word were on for assignment in the struct
+	while(fgets(line,400,stdin) != NULL){
             char *word;
             word = strtok(line,",");
             while(word != NULL){
-                printf("%s\n",word);
+		if(strpbrk(word,"\"") != NULL){
+			char tmp1[100];
+			strcpy(tmp1,word);
+			char *tmp = tmp1 + 1;
+			word = strtok(NULL,"\"");
+			strcat(tmp,word);
+			strcpy(word,tmp);
+		}
+	    }
                 word = strtok(NULL,",");
+                word_counter++;
             }
-    break;
+            word_counter = 0;
+            line_counter++;
 	}
 }
