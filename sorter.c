@@ -1,7 +1,7 @@
+#include "sorter.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "sorter.h"
 
 int main(int argc, char **(argv)){
 	// Quit if # of arguments are incorrect
