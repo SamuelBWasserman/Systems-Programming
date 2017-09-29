@@ -20,7 +20,7 @@ int main(int argc, char **(argv)){
 		char *word;
             	data_row *row = (data_row*)malloc(sizeof(data_row)); // Initialize empty data row
 		word = strtok(line,",");
-	    	char *col[28]
+	    	char *col[28];
 		// Tokenize until end of line
 	    	while(word != NULL){
 			// The movie column has commas in between quotes but needs to be stores as one token
@@ -37,8 +37,8 @@ int main(int argc, char **(argv)){
                 	word = strtok(NULL,",");
                 	word_counter++;
             	}
-		data_row -> col = col;
-		db[line_counter] = data_row;
+		row->col = col;
+		db[line_counter] = row;
             	word_counter = 0;
             	line_counter++;
 	}
