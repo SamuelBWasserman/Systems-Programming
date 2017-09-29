@@ -18,9 +18,7 @@ int main(int argc, char **(argv)){
     	int word_counter = 0; // keep track of what word were on for assignment in the struct
 	while(fgets(line,400,stdin) != NULL){
 		char *word;
-            	data_row *row = (data_row*)malloc(sizeof(data_row)); // Initialize empty data row
 		word = strtok(line,",");
-	    	char *column[28];
 		// Tokenize until end of line
 	    	while(word != NULL){
 			// The movie column has commas in between quotes but needs to be stores as one token
@@ -32,13 +30,11 @@ int main(int argc, char **(argv)){
 				strcat(tmp,word);
 				strcpy(word,tmp);
 			}
-			// Assign value to the row
-	    		column[word_counter] = word;	
+			db[line_counter].col[word_counter] = (char *) malloc(strlen(word) * sizeof(char));
+			db[line_counter].col[word_counter] = word;
                 	word = strtok(NULL,",");
                 	word_counter++;
             	}
-		row->col = column;
-		db[line_counter] = row;
             	word_counter = 0;
             	line_counter++;
 	}
