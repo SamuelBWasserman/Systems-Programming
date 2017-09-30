@@ -37,9 +37,9 @@ int main(int argc, char **(argv)){
 			    //Move to the next token
                 word = strtok(NULL,",");
                 word_counter++;
-            	    }
-            	    word_counter = 0;
-            	    line_counter++;
+           }
+           word_counter = 0;
+           line_counter++;
 	    }
 	    int column_to_sort; // will be passed to merge sort
 	        if(strcmp(argv[2],"color") == 0)

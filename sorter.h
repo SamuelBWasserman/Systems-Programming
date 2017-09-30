@@ -41,4 +41,4 @@ enum column {
 // Suggestion: prototype a mergesort function
 // Merge sort can take in the column number that needs to be sorted and return a
 // new sorted array of rows.
-void mergesort(data_row **, char *, enum column);
+void mergesort(data_row db[], int col, int l, int r);
