@@ -100,6 +100,7 @@ int main(int argc, char **(argv)){
 	        else if (strcmp(argv[2],"movie_facebook_likes") == 0)
 	            column_to_sort = 28;
 	    	// Call merge sort with db and column_to_sort
+		if(column_to_sort == )
             print_to_csv(db);
 }
 void mergesort(data_row db[], int col, int left, int right){
