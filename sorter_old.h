@@ -3,34 +3,34 @@
 // Suggestion: define a struct that mirrors a record (row) of the data set
 typedef struct data_rows {
   // I figure we can track all of the values as integers for sorting.
-  char *color;
-  char *director_name;
-  int num_critic_for_reviews;
-  float duration; // Because I don't know how to make dateTime obj
-  int director_facebook_likes;
-  int actor_3_facebook_likes;
-  char *actor_2_name;
-  int actor_1_facebook_likes;
-  float gross;
-  char *genres;
-  char *actor_1_name;
-  char *movie_title;
-  int num_voted_users;
-  int cast_total_facebook_likes;
-  char *actor_3_name;
-  int facenumber_in_poster;
-  char *plot_keywords;
-  char *movie_imdb_link;
-  int num_user_for_reviews;
-  char *language;
-  char *country;
-  char *content_rating;
-  float budget;
-  int title_year;
-  int actor_2_facebook_likes;
-  float imdb_score;
-  float aspect_ratio;
-  int movie_facebook_likes;
+  char *color; //0
+  char *director_name; //1
+  int num_critic_for_reviews; //2
+  float duration; //3
+  int director_facebook_likes; //4
+  int actor_3_facebook_likes; //5
+  char *actor_2_name; //6
+  int actor_1_facebook_likes; //7
+  float gross; //8
+  char *genres; //9
+  char *actor_1_name; //10
+  char *movie_title; //11
+  int num_voted_users; //12
+  int cast_total_facebook_likes; //13
+  char *actor_3_name; //14
+  int facenumber_in_poster; //15
+  char *plot_keywords; //16
+  char *movie_imdb_link; //17
+  int num_user_for_reviews; //18
+  char *language; //19
+  char *country; //20
+  char *content_rating; //21
+  float budget; //22
+  int title_year; //23
+  int actor_2_facebook_likes; //24
+  float imdb_score; //25
+  float aspect_ratio; //26
+  int movie_facebook_likes; //27
 
 } data_row;
 

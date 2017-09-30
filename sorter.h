@@ -7,38 +7,11 @@ typedef struct data_rows {
 
 } data_row;
 
-enum column {
-  color,
-  director_name,
-  num_critic_for_reviews,
-  duration,
-  director_facebook_likes,
-  actor_3_facebook_likes,
-  actor_2_name,
-  actor_1_facebook_likes,
-  gross,
-  genres,
-  actor_1_name,
-  movie_title,
-  num_voted_users,
-  cast_total_facebook_likes,
-  actor_3_name,
-  facenumber_in_poster,
-  plot_keywords,
-  movie_imdb_link,
-  num_user_for_reviews,
-  language,
-  country,
-  content_rating,
-  budget,
-  title_year,
-  actor_2_facebook_likes,
-  imdb_score,
-  aspect_ratio,
-  movie_facebook_likes
-};
-
 // Suggestion: prototype a mergesort function
 // Merge sort can take in the column number that needs to be sorted and return a
 // new sorted array of rows.
-void merge(data_row db[], int left, int middle, int right, int column);  
+int strallcmp(char const *a, char const *b);
+void sort(data_row db[], int col, int data_type, int left, int right);
+void merge(data_row db[], int column, int data_type, int left, int middle,
+           int right);
+void print_to_csv(data_row[]);
