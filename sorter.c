@@ -100,28 +100,29 @@ int main(int argc, char **(argv)){
 	            column_to_sort = 28;
 	    	// Call merge sort with db and column_to_sort
 
-}
+		
 
-void merge(data_row db[], int l, int m, int r, int column);
-void mergesort(data_row db[], int col, int l, int r){
+};
+
+void mergesort(data_row db[], int col, int left, int right){
 	if(l < r){
 		// Calculate the middle index of the array for splitting
-		int m = l + (r-1)/2;
+		int m = left + (right-1)/2;
 
 		// Recrusively sort both halves
-		mergesort(db, col, 1, m);
-		mergesort(db, col,  m+1, r);
+		mergesort(db, col, 1, middle);
+		mergesort(db, col,  middle+1, right);
 
 		// Merge halves together
-		merge(db, l, m, r, col);
+		merge(db, left, middle, right, col);
 	}
 
 }
 
-void merge(data_row db[], int l, int m, int r, int column){
+void merge(data_row db[], int left, int middle, int right, int column){
 	int i, j, k;
-	int size1 = m - l + 1;
-	int size2 = r - m;
+	int size1 = middle - left + 1;
+	int size2 = right - middle;
 	
 	// temp arrays
 	data_row temp_left[size1];
