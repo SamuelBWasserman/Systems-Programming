@@ -1,0 +1,27 @@
+Design:
+We defined a struct that represents a row in the database. The struct contains an array of each value in a column as a string.
+We used an array of the struct data_row type to hold all of the rows for sorting.
+To populate the array, we took the input line by line, and tokenized the columns in a line, delimiting by commas. We then allocated enough space in the array and used strcpy to put the token in the db array.
+We then call mergesort passing in the column we wanted to sort by as an integer, and the data type to compare with. Strcmp for strings,
+atoi for integers, and atof for floats.
+After mergesort completes, we output the results to a csv file.
+
+Assumptions:
+We completed this assignment with the assumption that the table has 28 columns and between 5000 and 5100 rows.
+
+Difficulties:
+In the begginning we had trouble reading in the data, because in the movie_title column, there was nested commas which caused the proceeding tokens to be incorrect. We solved this problem by checking for quotation marks in a token, then taking in the next token using a closing quotation mark as a delimeter and concatonating those two tokens, which solved this issue.
+
+Testing:
+To test we used the csv given, however a smaller file might have been easier to work with.
+
+Extra Credit:
+(General Sorter)
+Our sorter would work for the general case as long as we are given the data type of the column the user wishes to sort by. As of right now we know what data type the columns are and how many columns there can be, so if we are given the column number and the type, our struct is general enough to work with that.
+
+Using our code:
+We ran our code with
+cat input.file | ./sorter -c  movie_title > sortedmovies.csv
+
+
+(Interesting)
