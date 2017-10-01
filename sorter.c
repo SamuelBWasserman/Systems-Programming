@@ -39,6 +39,7 @@ int main(int argc, char **(argv)) {
       }
       //checks to see if the word is empty and sets null counter
       if(strlen(word) == 0){
+	printf("I ran!\n");
 	null_count++;
 	char null_val[6];
 	sprintf(null_val, "%d", null_count); // int -> string
@@ -134,7 +135,7 @@ int main(int argc, char **(argv)) {
   printf("Done with creating db! Line Counter at %d\n", line_counter);
   sort(db, column_to_sort, type_flag, 0, line_counter);
   printf("Building CSV\n");
-  print_to_csv(db);
+  //print_to_csv(db);
   return 0;
 }
 
