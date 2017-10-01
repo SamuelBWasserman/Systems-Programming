@@ -20,6 +20,7 @@ int main(int argc, char **(argv)) {
   int word_counter =
       0; // keep track of what word were on for assignment in the struct
   int type_flag = 0; // 0:STRING, 1:INT, 2:FLOAT
+  int null_count = 0;
 
   while (fgets(line, 400, stdin) != NULL) {
     char *word;
@@ -36,10 +37,17 @@ int main(int argc, char **(argv)) {
         strcat(tmp, word);
         strcpy(word, tmp);
       }
+      //checks to see if the word is empty and sets null counter
+      if(strlen(word) == 0){
+	null_count++;
+	char null_val[6];
+	sprintf(null_val, "%d", null_count); // int -> string
+	word = strcat("NULL_VALUE", null_val);
+      }
       // Allocate enough space for the string to be placed in the array
       db[line_counter].col[word_counter] =
 	(char *)malloc((strlen(word)+1) * sizeof(char));
-      // Copy the string into the array
+      // Copy the string into the array and add trailing string ender
       strcpy(db[line_counter].col[word_counter], word);
       db[line_counter].col[word_counter][strlen(word)+1] = '\0';
       // Move to the next token
@@ -137,6 +145,28 @@ int strallcmp(char const *a, char const *b) {
       return d;
   }
 }
+
+int NullCheck(char *str1, char *str2){
+  /*Returns: -1 for no null vals, 0 for both null, 1 for 1st null, 2 for 2nd null*/
+  int ret = -1;
+  // Both are NULL_VALUES
+  if((strstr(str1, "NULL_VALUE")) != NULL && (strstr(str2, "NULL_VALUE")) != NULL){
+    ret = 0;
+    return ret;
+  } else if((strstr(str1, "NULL_VALUE") != NULL) || (strstr(str2, "NULL_VALUE")) != NULL){
+    if(strstr(str1, "NULL_VALUE") != NULL){
+      ret = 1;
+      return ret;
+    } else{
+      ret = 2;
+      return ret;
+    }
+    return ret;
+  } else {
+    return ret;
+  }
+}
+
 void sort(data_row db[], int col, int data_type, int left, int right) {
   if (left < right) {
     // Calculate the middle index of the array for splitting
@@ -178,8 +208,38 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
 
   // Do comparisons of db values to sort
   while (i < size1 && j < size2) {
+    // Check for double NULL_VALUE
+    if(NullCheck(temp_left[i].col[column], temp_right[i].col[column]) == 0) {
+      char val_left[6];
+      char val_right[6];
+
+      //Get the numeric value of NULL_VALUE
+      strncpy(val_left, temp_left[i].col[column] + 10, strlen(temp_left[i].col[column]) - 10);
+      strncpy(val_right, temp_right[i].col[column] + 10, strlen(temp_right[i].col[column]) - 10);
+      val_left[strlen(temp_left[i].col[column]) - 10] = '\0';
+      val_right[strlen(temp_right[i].col[column]) - 10] = '\0';
+
+      //compare the two values
+      if(atoi(val_left) <= atoi(val_right)){
+	db[k] = temp_left[i];                                                                                          
+        i++;                                                                                                           
+      } else {                                                                                                         
+        db[k] = temp_right[j];                                                                                         
+        j++;                                                                                                           
+      }
+    } 
+    //Check for single NULL_VALUE
+    else if (NullCheck(temp_left[i].col[column], temp_right[i].col[column]) > 0) {
+      if(NullCheck(temp_left[i].col[column], temp_right[i].col[column]) == 1){
+	db[k] = temp_left[i];
+	i++;
+      } else {
+	db[k] = temp_right[j];
+	j++;	
+      }
+    }
     // String Comp.
-    if (data_type == 0) {
+    else if (data_type == 0) {
       int result = strallcmp(temp_left[i].col[column],
                       temp_right[i].col[column]);
       if (result < 0 || result == 0) {
