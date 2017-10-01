@@ -24,35 +24,36 @@ int main(int argc, char **(argv)) {
 
   while (fgets(line, 400, stdin) != NULL) {
     char *word;
-    word = strtok(line, ",");
+    word = strtok_blanks(line, ",");
     // Tokenize until end of line
     while (word != NULL) {
-      // The movie column has commas in between quotes but needs to be stores as
+      // The movie column has commas in between quotes but needs to be stored as
       // one token
       if (strpbrk(word, "\"") != NULL) {
         char tmp1[100];
         strcpy(tmp1, word);
         char *tmp = tmp1 + 1;
-        word = strtok(NULL, "\"");
+        word = strtok_blanks(NULL, "\"");
         strcat(tmp, word);
         strcpy(word, tmp);
       }
       //checks to see if the word is empty and sets null counter
-      if(strlen(word) == 0){
-	printf("I ran!\n");
-	null_count++;
-	char null_val[6];
-	sprintf(null_val, "%d", null_count); // int -> string
-	word = strcat("NULL_VALUE", null_val);
+      if(strlen(word) == 0 || strcmp(word,"<empty>") == 0 || strcmp(word,"") == 0 || word == NULL){
+	    printf("I ran!\n");
+	    null_count++;
+	    char null_val[20];
+	    sprintf(null_val, "NULL_VALUE%d", null_count); // int -> string
+	    printf("%s", null_val);
+	    strcpy(word,null_val);
       }
       // Allocate enough space for the string to be placed in the array
       db[line_counter].col[word_counter] =
-	(char *)malloc((strlen(word)+1) * sizeof(char));
+	    (char *)malloc((strlen(word)+1) * sizeof(char));
       // Copy the string into the array and add trailing string ender
       strcpy(db[line_counter].col[word_counter], word);
       db[line_counter].col[word_counter][strlen(word)+1] = '\0';
       // Move to the next token
-      word = strtok(NULL, ",");
+      word = strtok_blanks(NULL, ",");
       word_counter++;
     }
     word_counter = 0;
@@ -133,7 +134,7 @@ int main(int argc, char **(argv)) {
     type_flag = 0;
   }
   printf("Done with creating db! Line Counter at %d\n", line_counter);
-  sort(db, column_to_sort, type_flag, 0, line_counter);
+  // sort(db, column_to_sort, type_flag, 0, line_counter);
   printf("Building CSV\n");
   //print_to_csv(db);
   return 0;
@@ -307,4 +308,27 @@ void print_to_csv(data_row db[]) {
     }
     fprintf(stdout, "\n");
   }
+}
+char * strtok_blanks (char * str, char const * delims)
+{
+  static char  * src = NULL;
+  char  *  p,  * ret = 0;
+
+  if (str != NULL)
+    src = str;
+
+  if (src == NULL)
+    return NULL;
+
+  if ((p = strpbrk (src, delims)) != NULL) {
+    *p  = 0;
+    ret = src;
+    src = ++p;
+
+  } else if (*src) {
+    ret = src;
+    src = NULL;
+  }
+
+  return ret;
 }

@@ -14,4 +14,5 @@ int strallcmp(char const *a, char const *b);
 void sort(data_row db[], int col, int data_type, int left, int right);
 void merge(data_row db[], int column, int data_type, int left, int middle,
            int right);
+char * strtok_blanks (char * str, char const * delims);
 void print_to_csv(data_row[]);
