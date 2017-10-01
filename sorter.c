@@ -14,11 +14,10 @@ int main(int argc, char **(argv)) {
   data_row db[5100];        // enough space to store every row
   char line[600];           // one line from the file
   int line_counter =
-      -2; // count what line we're on to keep track of the struct array
+      -1; // count what line we're on to keep track of the struct array
   int word_counter =
       0; // keep track of what word were on for assignment in the struct
   int type_flag = 0; // 0:STRING, 1:INT, 2:FLOAT
-  int null_count = 0; 
 
   while (fgets(line, 600, stdin) != NULL) {
     int i; //for loops and shiz    
@@ -30,8 +29,7 @@ int main(int argc, char **(argv)) {
     if(line[0] == ','){
              char null_val[15];
 	     char templine[600];
-             sprintf(null_val, "NULL_VALUE%d", null_count);
-	     null_count++;
+             sprintf(null_val, "NULL_VALUE%d", line_counter);
 	     strcpy(templine,null_val);
 	     templine[strlen(null_val)] = '\0';
 	     strcat(templine, line);
@@ -42,10 +40,9 @@ int main(int argc, char **(argv)) {
 	if(line[i] == ',' && line[i+1] == ','){
 	  char null_val[15];
 	  char templine[600]; // Buffer to put the modified line in 
-	  strncpy(templine,line,i); //TODO: Change this to i+1 if it copies incorrent # of chars
+	  strncpy(templine,line,i+1); //TODO: Change this to i+1 if it copies incorrent # of chars
 	  templine[i+1] = '\0';
-	  sprintf(null_val, "NULL_VALUE%d", null_count);
-	  null_count++;
+	  sprintf(null_val, "NULL_VALUE%d", line_counter);
 	  strcat(templine,null_val);
 	  strcat(templine,line+i+1);
 	  strcpy(line, templine);
@@ -54,8 +51,7 @@ int main(int argc, char **(argv)) {
     //IF the line ends with a ','
     if(line[strlen(line) -1] == ','){
              char null_val[15];
-             sprintf(null_val, "NULL_VALUE%d", null_count);
-	     null_count++;   
+             sprintf(null_val, "NULL_VALUE%d", line_counter);
              strcat(line,null_val);
     }
     char *word;
@@ -63,15 +59,27 @@ int main(int argc, char **(argv)) {
     //word = strtok_blanks(line,delims);
     // Tokenize until end of line
     while (word) {
-      // The movie column has commas in between quotes but needs to be stored as
-      // one token
-      if (strpbrk(word, "\"") != NULL) {
-        char tmp1[100];
-        strcpy(tmp1, word);
-        char *tmp = tmp1 + 1;
-        word = strtok(NULL, "\"");
-        strcat(tmp, word);
-        strcpy(word, tmp);
+      //IF string has commas in the middle somwhere
+      
+	if  (word[0] == '\"') {
+        char buffer[100];
+        strcpy(buffer, word);  
+	word = strtok(NULL, ",");
+
+	while(strpbrk(word, "\"") == NULL){
+	  strcat(buffer, ",\0");                                                                                
+	  strcat(buffer, word);
+	  word = strtok(NULL, ",");
+	}
+	strcat(buffer, ",\0");
+        strcat(buffer, word);
+	strcat(buffer, "\0");
+        db[line_counter].col[word_counter] =
+            (char *)malloc((strlen(buffer) + 1) * sizeof(char));
+	strcpy(db[line_counter].col[word_counter], buffer);
+	word_counter++;
+	word = strtok(NULL,",");
+	continue;
       }
       // Allocate enough space for the string to be placed in the array
       db[line_counter].col[word_counter] =
@@ -160,13 +168,9 @@ int main(int argc, char **(argv)) {
     type_flag = 0;
   }
   printf("Done with creating db! Line Counter at %d\n", line_counter);
-  int sam;
-  for(sam=0;sam < 5044; sam++){
-    printf("%d %s\n", sam, db[sam].col[23]);
-  }
-  sort(db, column_to_sort, type_flag, 0, line_counter);
+  sort(db, column_to_sort, type_flag, 0, line_counter-2);
   printf("Building CSV\n");
-  //print_to_csv(db);
+  print_to_csv(db);
   return 0;
 }
 
@@ -220,6 +224,11 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
   int i, j, k;
   int size1 = middle - left + 1;
   int size2 = right - middle;
+
+
+  if(left == 5043){
+    printf("Fuck you Earlich 2\n");
+  }
 
   // temp arrays
   data_row temp_left[size1];
@@ -284,6 +293,9 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
     }
     // Int Comp.
     else if (data_type == 1) {
+      if(left == 5044 && middle == 5044 && right == 5045){
+	printf("FUCKA YOU EARLICH BACHMAN\n");
+      }
       int left_int = atoi(temp_left[i].col[column]);
       int right_int = atoi(temp_right[i].col[column]);
       if (left_int <= right_int) {
