@@ -9,52 +9,78 @@ int main(int argc, char **(argv)) {
     printf("invalid arguments\n");
     return 0;
   }
+  char delims[] = ",";
   // Define variables
   data_row db[5100];        // enough space to store every row
-  fscanf(stdin, "%*[^\n]"); // Read and discard a line
-  char line[400];           // one line from the file
-  char first_line[400];
-  fgets(first_line, 400, stdin); // discard first line
+  char line[600];           // one line from the file
   int line_counter =
-      0; // count what line we're on to keep track of the struct array
+      -2; // count what line we're on to keep track of the struct array
   int word_counter =
       0; // keep track of what word were on for assignment in the struct
   int type_flag = 0; // 0:STRING, 1:INT, 2:FLOAT
-  int null_count = 0;
+  int null_count = 0; 
 
-  while (fgets(line, 400, stdin) != NULL) {
+  while (fgets(line, 600, stdin) != NULL) {
+    int i; //for loops and shiz    
+    //IF first char is ',' in the line
+    if(line_counter < 0){
+      line_counter++;
+      continue;
+    }
+    if(line[0] == ','){
+             char null_val[15];
+	     char templine[600];
+             sprintf(null_val, "NULL_VALUE%d", null_count);
+	     null_count++;
+	     strcpy(templine,null_val);
+	     templine[strlen(null_val)] = '\0';
+	     strcat(templine, line);
+	     strcpy(line, templine);
+    }
+    //IF ",," exists in the line
+    for(i = 0;i<strlen(line);i++){
+	if(line[i] == ',' && line[i+1] == ','){
+	  char null_val[15];
+	  char templine[600]; // Buffer to put the modified line in 
+	  strncpy(templine,line,i); //TODO: Change this to i+1 if it copies incorrent # of chars
+	  templine[i+1] = '\0';
+	  sprintf(null_val, "NULL_VALUE%d", null_count);
+	  null_count++;
+	  strcat(templine,null_val);
+	  strcat(templine,line+i+1);
+	  strcpy(line, templine);
+	}
+    }
+    //IF the line ends with a ','
+    if(line[strlen(line) -1] == ','){
+             char null_val[15];
+             sprintf(null_val, "NULL_VALUE%d", null_count);
+	     null_count++;   
+             strcat(line,null_val);
+    }
     char *word;
-    word = strtok_blanks(line, ",");
+    word = strtok(line, delims);
+    //word = strtok_blanks(line,delims);
     // Tokenize until end of line
-    while (word != NULL) {
+    while (word) {
       // The movie column has commas in between quotes but needs to be stored as
       // one token
       if (strpbrk(word, "\"") != NULL) {
         char tmp1[100];
         strcpy(tmp1, word);
         char *tmp = tmp1 + 1;
-        word = strtok_blanks(NULL, "\"");
+        word = strtok(NULL, "\"");
         strcat(tmp, word);
         strcpy(word, tmp);
       }
-      //checks to see if the word is empty and sets null counter
-      if(strlen(word) == 0 || strcmp(word,"<empty>") == 0 || strcmp(word,"") == 0 || word == NULL){
-	    printf("I ran!\n");
-	    null_count++;
-	    char null_val[20];
-	    sprintf(null_val, "NULL_VALUE%d", null_count); // int -> string
-	    printf("%s", null_val);
-	    strcpy(word,null_val);
-      }
       // Allocate enough space for the string to be placed in the array
       db[line_counter].col[word_counter] =
-	    (char *)malloc((strlen(word)+1) * sizeof(char));
+	    (char *)malloc((strlen(word) + 1) * sizeof(char));
       // Copy the string into the array and add trailing string ender
       strcpy(db[line_counter].col[word_counter], word);
-      db[line_counter].col[word_counter][strlen(word)+1] = '\0';
       // Move to the next token
-      word = strtok_blanks(NULL, ",");
       word_counter++;
+      word = strtok(NULL, delims);
     }
     word_counter = 0;
     line_counter++;
@@ -134,7 +160,11 @@ int main(int argc, char **(argv)) {
     type_flag = 0;
   }
   printf("Done with creating db! Line Counter at %d\n", line_counter);
-  // sort(db, column_to_sort, type_flag, 0, line_counter);
+  int sam;
+  for(sam=0;sam < 5044; sam++){
+    printf("%d %s\n", sam, db[sam].col[23]);
+  }
+  sort(db, column_to_sort, type_flag, 0, line_counter);
   printf("Building CSV\n");
   //print_to_csv(db);
   return 0;
@@ -212,8 +242,8 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
   while (i < size1 && j < size2) {
     // Check for double NULL_VALUE
     if(NullCheck(temp_left[i].col[column], temp_right[i].col[column]) == 0) {
-      char val_left[6];
-      char val_right[6];
+      char val_left[10];
+      char val_right[10];
 
       //Get the numeric value of NULL_VALUE
       strncpy(val_left, temp_left[i].col[column] + 10, strlen(temp_left[i].col[column]) - 10);
@@ -311,24 +341,24 @@ void print_to_csv(data_row db[]) {
 }
 char * strtok_blanks (char * str, char const * delims)
 {
-  static char  * src = NULL;
-  char  *  p,  * ret = 0;
+static char  *src = NULL;
+    char  *p,  *ret = 0;
 
-  if (str != NULL)
-    src = str;
+    if (str != NULL)
+        src = str;
 
-  if (src == NULL)
-    return NULL;
+    if (src == NULL || *src == '\0')    // Fix 1
+        return NULL;
 
-  if ((p = strpbrk (src, delims)) != NULL) {
-    *p  = 0;
-    ret = src;
-    src = ++p;
-
-  } else if (*src) {
-    ret = src;
-    src = NULL;
-  }
-
-  return ret;
+    ret = src;                          // Fix 2
+    if ((p = strpbrk(src, delims)) != NULL)
+    {
+        *p  = 0;
+        ret = src;                    // Unnecessary
+                src = ++p;
+                    }
+                        else
+                               src += strlen(src);
+        
+                                    return ret;
 }
