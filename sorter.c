@@ -1,7 +1,7 @@
 #include "sorter.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 int main(int argc, char **(argv)) {
   // Quit if # of arguments are incorrect
@@ -38,9 +38,10 @@ int main(int argc, char **(argv)) {
       }
       // Allocate enough space for the string to be placed in the array
       db[line_counter].col[word_counter] =
-          (char *)malloc(strlen(word) * sizeof(char));
+	(char *)malloc((strlen(word)+1) * sizeof(char));
       // Copy the string into the array
       strcpy(db[line_counter].col[word_counter], word);
+      db[line_counter].col[word_counter][strlen(word)+1] = '\0';
       // Move to the next token
       word = strtok(NULL, ",");
       word_counter++;
@@ -105,6 +106,10 @@ int main(int argc, char **(argv)) {
     column_to_sort = 26;
   else if (strcmp(argv[2], "movie_facebook_likes") == 0)
     column_to_sort = 27;
+  else{
+    printf("Error: Column name not found!\n");
+    return 0;
+  }
   // Call merge sort with db and column_to_sort
   if (column_to_sort == 2 || column_to_sort == 4 || column_to_sort == 5 ||
       column_to_sort == 7 || column_to_sort == 12 || column_to_sort == 13 ||
@@ -118,8 +123,11 @@ int main(int argc, char **(argv)) {
   } else {
     type_flag = 0;
   }
-  sort(data_row db[], column_to_sort, type_flag, 0, line_counter);
+  printf("Done with creating db! Line Counter at %d\n", line_counter);
+  sort(db, column_to_sort, type_flag, 0, line_counter);
+  printf("Building CSV\n");
   print_to_csv(db);
+  return 0;
 }
 
 int strallcmp(char const *a, char const *b) {
@@ -132,14 +140,16 @@ int strallcmp(char const *a, char const *b) {
 void sort(data_row db[], int col, int data_type, int left, int right) {
   if (left < right) {
     // Calculate the middle index of the array for splitting
-    int middle = left + (right - 1) / 2;
+    int middle = left + (right - left) / 2;
 
     // Recrusively sort both halves
-    sort(db, col, data_type, 1, middle);
+    sort(db, col, data_type, left, middle);
     sort(db, col, data_type, middle + 1, right);
 
+    printf("LMR: %d, %d, %d\n", left, middle, right);
     // Merge halves together
     merge(db, col, data_type, left, middle, right);
+    printf("Done!\n");
   }
 }
 
@@ -205,9 +215,9 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
         j++;
       }
     } else{
-			printf("Error: data_type must be 0,1 or 2\n");
-			return;
-		}
+      printf("Error: data_type must be 0,1 or 2\n");
+      return;
+    }
     k++;
   }
 
