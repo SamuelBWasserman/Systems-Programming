@@ -9,7 +9,7 @@ void sort(data_row db[], int col, int data_type, int left, int right) {
     // Calculate the middle index of the array for splitting
     int middle = left + (right - left) / 2;
 
-    // Recrusively sort both halves
+    // Recursively sort both halves
     sort(db, col, data_type, left, middle);
     sort(db, col, data_type, middle + 1, right);
 

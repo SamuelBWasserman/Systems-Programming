@@ -21,6 +21,7 @@ int main(int argc, char **(argv)) {
   int type_flag = 0; // 0:STRING, 1:INT, 2:FLOAT
 
   while (fgets(line, 600, stdin) != NULL) {
+    // Print first line to csv
     if(line_counter == -1){
         fprintf(stdout, line);
     }
@@ -171,7 +172,7 @@ int main(int argc, char **(argv)) {
   } else {
     type_flag = 0;
   }
-  sort(db, column_to_sort, type_flag, 0, line_counter-2);
+  sort(db, column_to_sort, type_flag, 0, line_counter - 1);
   print_to_csv(db,line_counter);
   return 0;
 }
