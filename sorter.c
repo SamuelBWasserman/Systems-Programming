@@ -20,7 +20,7 @@ int main(int argc, char **(argv)) {
   int type_flag = 0; // 0:STRING, 1:INT, 2:FLOAT
 
   while (fgets(line, 600, stdin) != NULL) {
-    int i; //for loops and shiz    
+    int i; //for loops and shiz
     //IF first char is ',' in the line
     if(line_counter < 0){
       line_counter++;
@@ -39,7 +39,7 @@ int main(int argc, char **(argv)) {
     for(i = 0;i<strlen(line);i++){
 	if(line[i] == ',' && line[i+1] == ','){
 	  char null_val[15];
-	  char templine[600]; // Buffer to put the modified line in 
+	  char templine[600]; // Buffer to put the modified line in
 	  strncpy(templine,line,i+1); //TODO: Change this to i+1 if it copies incorrent # of chars
 	  templine[i+1] = '\0';
 	  sprintf(null_val, "NULL_VALUE%d", line_counter);
@@ -60,14 +60,14 @@ int main(int argc, char **(argv)) {
     // Tokenize until end of line
     while (word) {
       //IF string has commas in the middle somwhere
-      
+
 	if  (word[0] == '\"') {
         char buffer[100];
-        strcpy(buffer, word);  
+        strcpy(buffer, word);
 	word = strtok(NULL, ",");
 
 	while(strpbrk(word, "\"") == NULL){
-	  strcat(buffer, ",\0");                                                                                
+	  strcat(buffer, ",\0");
 	  strcat(buffer, word);
 	  word = strtok(NULL, ",");
 	}
@@ -250,17 +250,17 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
       strncpy(val_right, temp_right[j].col[column] + 10, strlen(temp_right[j].col[column]) - 10);
       val_left[strlen(temp_left[i].col[column]) - 10] = '\0';
       val_right[strlen(temp_right[j].col[column]) - 10] = '\0';
-     
+
 
       //compare the two values
       if(atoi(val_left) <= atoi(val_right)){
-	    db[k] = temp_left[i];                                                                                          
-        i++;                                                                                                           
-      } else {                                                                                                         
-        db[k] = temp_right[j];                                                                                         
-        j++;                                                                                                           
+	    db[k] = temp_left[i];
+        i++;
+      } else {
+        db[k] = temp_right[j];
+        j++;
       }
-    } 
+    }
     //Check for single NULL_VALUE
     else if (NullCheck(temp_left[i].col[column], temp_right[j].col[column]) > 0) {
       if(NullCheck(temp_left[i].col[column], temp_right[j].col[column]) == 1){
@@ -268,7 +268,7 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
 	i++;
       } else {
 	db[k] = temp_right[j];
-	j++;	
+	j++;
       }
     }
     // String Comp.
@@ -336,17 +336,17 @@ void print_to_csv(data_row db[], int line_counter) {
   for (i = 0; i < line_counter; i++) {
     for (j = 0; j < 28; j++) {
       if(strpbrk(db[i].col[j],"NULL") != NULL){
-	printf(",");
+	fprintf(stdout,",");
 	continue;
       }
       if(j<27){
       	char tmp[125];
         strcpy(tmp,db[i].col[j]);
         strcat(tmp,",\0");
-     	printf(tmp);
+     	fprintf(stdout,tmp);
 	}
-     else 
-     	printf(db[i].col[j]);
+     else
+     	fprintf(stdout,db[i].col[j]);
     }
   }
 }
