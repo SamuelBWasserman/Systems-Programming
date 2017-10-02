@@ -23,7 +23,7 @@ int main(int argc, char **(argv)) {
   while (fgets(line, 600, stdin) != NULL) {
     // Print first line to csv
     if(line_counter == -1){
-        // fprintf(stdout, line);
+        fprintf(stdout, line);
     }
     int i;
     //IF first char is ',' in the line
