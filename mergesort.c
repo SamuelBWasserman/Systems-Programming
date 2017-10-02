@@ -30,11 +30,11 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
   // Allocate space in temp arrays
   for (i = 0; i < size1; i++) {
       for(j =0; j< 28; j++)
-          temp_left[i].col[j] = malloc(sizeof(db[i].col[j]));
+          temp_left[i].col[j] = (char *)malloc(sizeof(db[i].col[j]));
   }
   for (i = 0; i < size2; i++) {
       for(j =0; j< 28; j++)
-          temp_left[i].col[j] = malloc(sizeof(db[i].col[j]));
+          temp_left[i].col[j] = (char *)malloc(sizeof(db[i].col[j]));
   }
   
   // Copy data into the temp arrays

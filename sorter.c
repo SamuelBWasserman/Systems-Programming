@@ -172,7 +172,7 @@ int main(int argc, char **(argv)) {
   } else {
     type_flag = 0;
   }
-  sort(db, column_to_sort, type_flag, 0, line_counter - 1);
+  // sort(db, column_to_sort, type_flag, 0, line_counter - 1);
   print_to_csv(db, line_counter);
   return 0;
 }
@@ -211,8 +211,8 @@ void print_to_csv(data_row db[], int line_counter) {
   for (i = 0; i < 5044; i++) {
     for (j = 0; j < 28; j++) {
       if(strpbrk(db[i].col[j],"NULL") != NULL){
-	fprintf(stdout,",");
-	continue;
+	    fprintf(stdout,",");
+	    continue;
       }
       if(j<27){
       	char tmp[125];
