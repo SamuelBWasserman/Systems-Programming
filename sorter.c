@@ -213,13 +213,13 @@ void print_to_csv(data_row db[], int line_counter) {
     
       if(strstr(db[i].col[j],"NULL") != NULL){
 	    fprintf(stdout,",");
-	    if(i == 27){
+	    if(j == 27){
 	        fprintf(stdout,"\n");
 	    }
 	    continue;
       }
       
-      if(j<27){
+      if(j != 27){
       	char tmp[125];
         strcpy(tmp,db[i].col[j]);
         strcat(tmp,",\0");
