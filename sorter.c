@@ -333,7 +333,7 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
 
 void print_to_csv(data_row db[], int line_counter) {
   int i, j;
-  for (i = 0; i < line_counter; i++) {
+  for (i = 0; i < 5044; i++) {
     for (j = 0; j < 28; j++) {
       if(strpbrk(db[i].col[j],"NULL") != NULL){
 	fprintf(stdout,",");
