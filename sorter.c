@@ -220,9 +220,9 @@ void print_to_csv(data_row db[], int line_counter) {
         strcat(tmp,",\0");
      	fprintf(stdout,tmp);
 	}*/
-     else
-     	fprintf(stdout,db[i].col[j]);
-     	fprintf(stdout,",");
+     fprintf(stdout,db[i].col[j]);
+     	
+     fprintf(stdout,",");
     }
   }
 }
