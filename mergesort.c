@@ -7,7 +7,7 @@
 void sort(data_row db[], int col, int data_type, int left, int right) {
   if (left < right) {
     // Calculate the middle index of the array for splitting
-    int middle = left + (right - left) / 2;
+    int middle = left + (right - left) / 2; 
 
     // Recursively sort both halves
     sort(db, col, data_type, left, middle);
@@ -27,7 +27,16 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
   // temp arrays
   data_row temp_left[size1];
   data_row temp_right[size2];
-
+  // Allocate space in temp arrays
+  for (i = 0; i < size1; i++) {
+      for(j =0; j< 28; j++)
+          temp_left[i].col[j] = malloc(sizeof(db[i].col[j]));
+  }
+  for (i = 0; i < size2; i++) {
+      for(j =0; j< 28; j++)
+          temp_left[i].col[j] = malloc(sizeof(db[i].col[j]));
+  }
+  
   // Copy data into the temp arrays
   for (i = 0; i < size1; i++) {
     temp_left[i] = (data_row) db[left + i];

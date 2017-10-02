@@ -23,9 +23,9 @@ int main(int argc, char **(argv)) {
   while (fgets(line, 600, stdin) != NULL) {
     // Print first line to csv
     if(line_counter == -1){
-        fprintf(stdout, line);
+        // fprintf(stdout, line);
     }
-    int i; //for loops and shiz
+    int i;
     //IF first char is ',' in the line
     if(line_counter < 0){
       line_counter++;
@@ -172,8 +172,8 @@ int main(int argc, char **(argv)) {
   } else {
     type_flag = 0;
   }
-  // sort(db, column_to_sort, type_flag, 0, line_counter - 1);
-  print_to_csv(db,line_counter);
+  sort(db, column_to_sort, type_flag, 0, line_counter - 1);
+  print_to_csv(db, line_counter);
   return 0;
 }
 
