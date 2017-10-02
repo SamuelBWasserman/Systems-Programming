@@ -210,11 +210,12 @@ void print_to_csv(data_row db[], int line_counter) {
   int i, j;
   for (i = 0; i < line_counter; i++) {
     for (j = 0; j < 28; j++) {
-    /*
+    
       if(strpbrk(db[i].col[j],"NULL") != NULL){
 	    fprintf(stdout,",");
 	    continue;
       }
+      /*
       if(j<27){
       	char tmp[125];
         strcpy(tmp,db[i].col[j]);
