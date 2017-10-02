@@ -11,7 +11,7 @@ int main(int argc, char **(argv)) {
   }
   char delims[] = ",";
   // Define variables
-  data_row db[5100];        // enough space to store every row
+  data_row db[5045];        // enough space to store every row
   char line[600];           // one line from the file
   int line_counter =
       -1; // count what line we're on to keep track of the struct array
@@ -187,7 +187,7 @@ int NullCheck(char *str1, char *str2){
   if((strstr(str1, "NULL_VALUE")) != NULL && (strstr(str2, "NULL_VALUE")) != NULL){
     ret = 0;
     return ret;
-  } else if((strstr(str1, "NULL_VALUE") != NULL) || (strstr(str2, "NULL_VALUE")) != NULL){
+  } else if((strstr(str1, "NULL_VALUE") != NULL) || (strstr(str2, "NULL_VALUE") != NULL)){
     if(strstr(str1, "NULL_VALUE") != NULL){
       ret = 1;
       return ret;
@@ -221,11 +221,6 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
   int size1 = middle - left + 1;
   int size2 = right - middle;
 
-
-  if(left == 5043){
-    printf("Fuck you Earlich 2\n");
-  }
-
   // temp arrays
   data_row temp_left[size1];
   data_row temp_right[size2];
@@ -246,7 +241,7 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
   // Do comparisons of db values to sort
   while (i < size1 && j < size2) {
     // Check for double NULL_VALUE
-    if(NullCheck(temp_left[i].col[column], temp_right[i].col[column]) == 0) {
+      if(NullCheck(temp_left[i].col[column], temp_right[i].col[column]) == 0) {
       char val_left[10];
       char val_right[10];
 
@@ -255,6 +250,7 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
       strncpy(val_right, temp_right[i].col[column] + 10, strlen(temp_right[i].col[column]) - 10);
       val_left[strlen(temp_left[i].col[column]) - 10] = '\0';
       val_right[strlen(temp_right[i].col[column]) - 10] = '\0';
+     
 
       //compare the two values
       if(atoi(val_left) <= atoi(val_right)){
