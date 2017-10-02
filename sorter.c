@@ -21,6 +21,9 @@ int main(int argc, char **(argv)) {
   int type_flag = 0; // 0:STRING, 1:INT, 2:FLOAT
 
   while (fgets(line, 600, stdin) != NULL) {
+    if(line_counter == -1){
+        fprintf(stdout, line);
+    }
     int i; //for loops and shiz
     //IF first char is ',' in the line
     if(line_counter < 0){

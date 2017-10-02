@@ -100,7 +100,7 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
     }
     // Float Comp.
     else if (data_type == 2) {
-      // Cast and set values for comp.
+      // Cast and set values for comparison
       float left_float = atof(temp_left[i].col[column]);
       float right_float = atof(temp_right[j].col[column]);
       if (left_float <= right_float) {
@@ -117,16 +117,14 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
     k++;
   }
 
-  /* Copy the remaining elements of L[], if there
-   * are any */
+   // Copy the remaining elements of left
   while (i < size1) {
     db[k] = temp_left[i];
     i++;
     k++;
   }
 
-  /* Copy the remaining elements of R[], if there
-   *are any */
+  // Copy the remaining elements of Right
   while (j < size2) {
     db[k] = temp_right[j];
     j++;
