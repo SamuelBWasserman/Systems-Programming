@@ -211,21 +211,19 @@ void print_to_csv(data_row db[], int line_counter) {
   for (i = 0; i < line_counter; i++) {
     for (j = 0; j < 28; j++) {
     
-      if(strpbrk(db[i].col[j],"NULL") != NULL){
+      if(strstr(db[i].col[j],"NULL") != NULL){
 	    fprintf(stdout,",");
 	    continue;
       }
-      /*
+      
       if(j<27){
       	char tmp[125];
         strcpy(tmp,db[i].col[j]);
         strcat(tmp,",\0");
      	fprintf(stdout,tmp);
+     	continue;
 	}
-	 else */
       fprintf(stdout,db[i].col[j]);
-      if(i != 27)	
-      fprintf(stdout,",");
     }
   }
 }
