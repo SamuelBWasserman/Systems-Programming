@@ -213,6 +213,9 @@ void print_to_csv(data_row db[], int line_counter) {
     
       if(strstr(db[i].col[j],"NULL") != NULL){
 	    fprintf(stdout,",");
+	    if(i == 27){
+	        fprintf(stdout,"\n");
+	    }
 	    continue;
       }
       
@@ -222,7 +225,7 @@ void print_to_csv(data_row db[], int line_counter) {
         strcat(tmp,",\0");
      	fprintf(stdout,tmp);
      	continue;
-	}
+	  }
       fprintf(stdout,db[i].col[j]);
     }
   }
