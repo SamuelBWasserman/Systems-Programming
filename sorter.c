@@ -241,20 +241,20 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
   // Do comparisons of db values to sort
   while (i < size1 && j < size2) {
     // Check for double NULL_VALUE
-      if(NullCheck(temp_left[i].col[column], temp_right[i].col[column]) == 0) {
+      if(NullCheck(temp_left[i].col[column], temp_right[j].col[column]) == 0) {
       char val_left[10];
       char val_right[10];
 
       //Get the numeric value of NULL_VALUE
       strncpy(val_left, temp_left[i].col[column] + 10, strlen(temp_left[i].col[column]) - 10);
-      strncpy(val_right, temp_right[i].col[column] + 10, strlen(temp_right[i].col[column]) - 10);
+      strncpy(val_right, temp_right[j].col[column] + 10, strlen(temp_right[j].col[column]) - 10);
       val_left[strlen(temp_left[i].col[column]) - 10] = '\0';
-      val_right[strlen(temp_right[i].col[column]) - 10] = '\0';
+      val_right[strlen(temp_right[j].col[column]) - 10] = '\0';
      
 
       //compare the two values
       if(atoi(val_left) <= atoi(val_right)){
-	db[k] = temp_left[i];                                                                                          
+	    db[k] = temp_left[i];                                                                                          
         i++;                                                                                                           
       } else {                                                                                                         
         db[k] = temp_right[j];                                                                                         
@@ -262,8 +262,8 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
       }
     } 
     //Check for single NULL_VALUE
-    else if (NullCheck(temp_left[i].col[column], temp_right[i].col[column]) > 0) {
-      if(NullCheck(temp_left[i].col[column], temp_right[i].col[column]) == 1){
+    else if (NullCheck(temp_left[i].col[column], temp_right[j].col[column]) > 0) {
+      if(NullCheck(temp_left[i].col[column], temp_right[j].col[column]) == 1){
 	db[k] = temp_left[i];
 	i++;
       } else {
@@ -274,7 +274,7 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
     // String Comp.
     else if (data_type == 0) {
       int result = strallcmp(temp_left[i].col[column],
-                      temp_right[i].col[column]);
+                      temp_right[j].col[column]);
       if (result < 0 || result == 0) {
         db[k] = temp_left[i];
         i++;
@@ -286,7 +286,7 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
     // Int Comp.
     else if (data_type == 1) {
       int left_int = atoi(temp_left[i].col[column]);
-      int right_int = atoi(temp_right[i].col[column]);
+      int right_int = atoi(temp_right[j].col[column]);
       if (left_int <= right_int) {
         db[k] = temp_left[i];
         i++;
@@ -299,7 +299,7 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
     else if (data_type == 2) {
       // Cast and set values for comp.
       float left_float = atof(temp_left[i].col[column]);
-      float right_float = atof(temp_right[i].col[column]);
+      float right_float = atof(temp_right[j].col[column]);
       if (left_float <= right_float) {
         db[k] = temp_left[i];
         i++;
@@ -336,17 +336,17 @@ void print_to_csv(data_row db[], int line_counter) {
   for (i = 0; i < line_counter; i++) {
     for (j = 0; j < 28; j++) {
       if(strpbrk(db[i].col[j],"NULL") != NULL){
-	fprintf(stdout,",");
+	printf(",");
 	continue;
       }
       if(j<27){
       	char tmp[125];
         strcpy(tmp,db[i].col[j]);
         strcat(tmp,",\0");
-     	fprintf(stdout,tmp);
+     	printf(tmp);
 	}
      else 
-     	fprintf(stdout, db[i].col[j]);
+     	printf(db[i].col[j]);
     }
   }
 }
