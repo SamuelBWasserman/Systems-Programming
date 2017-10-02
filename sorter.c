@@ -167,10 +167,8 @@ int main(int argc, char **(argv)) {
   } else {
     type_flag = 0;
   }
-  printf("Done with creating db! Line Counter at %d\n", line_counter);
   sort(db, column_to_sort, type_flag, 0, line_counter-2);
-  printf("Building CSV\n");
-  print_to_csv(db);
+  print_to_csv(db,line_counter);
   return 0;
 }
 
@@ -212,10 +210,8 @@ void sort(data_row db[], int col, int data_type, int left, int right) {
     sort(db, col, data_type, left, middle);
     sort(db, col, data_type, middle + 1, right);
 
-    printf("LMR: %d, %d, %d\n", left, middle, right);
     // Merge halves together
     merge(db, col, data_type, left, middle, right);
-    printf("Done!\n");
   }
 }
 
@@ -293,9 +289,6 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
     }
     // Int Comp.
     else if (data_type == 1) {
-      if(left == 5044 && middle == 5044 && right == 5045){
-	printf("FUCKA YOU EARLICH BACHMAN\n");
-      }
       int left_int = atoi(temp_left[i].col[column]);
       int right_int = atoi(temp_right[i].col[column]);
       if (left_int <= right_int) {
@@ -342,35 +335,19 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
   }
 }
 
-void print_to_csv(data_row db[]) {
+void print_to_csv(data_row db[], int line_counter) {
   int i, j;
-  for (i = 0; i < 5050; i++) {
+  for (i = 0; i < line_counter; i++) {
     for (j = 0; j < 28; j++) {
-      fprintf(stdout, db[i].col[j]);
+      if(j<27){
+      	char tmp[125];
+        strcpy(tmp,db[i].col[j]);
+        strcat(tmp,",\0");
+     	fprintf(stdout,tmp);
+	}
+     else 
+     	fprintf(stdout, db[i].col[j]);
     }
     fprintf(stdout, "\n");
   }
-}
-char * strtok_blanks (char * str, char const * delims)
-{
-static char  *src = NULL;
-    char  *p,  *ret = 0;
-
-    if (str != NULL)
-        src = str;
-
-    if (src == NULL || *src == '\0')    // Fix 1
-        return NULL;
-
-    ret = src;                          // Fix 2
-    if ((p = strpbrk(src, delims)) != NULL)
-    {
-        *p  = 0;
-        ret = src;                    // Unnecessary
-                src = ++p;
-                    }
-                        else
-                               src += strlen(src);
-        
-                                    return ret;
 }
