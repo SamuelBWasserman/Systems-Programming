@@ -13,6 +13,7 @@ Difficulties:
 In the begginning we had trouble reading in the data, because in the movie_title column, there was nested commas which caused the proceeding tokens to be incorrect. We solved this problem by checking for quotation marks in a token, then taking in the next token using a closing quotation mark as a delimeter and concatonating those two tokens, which solved this issue.
 We then had issues with blank columns. We fixed this by looping over the input looking for consecutive columns, and placing a dummy value within them, then check for those values on our actual parse and place appropriate values in our struct database.
 Lastly, after the mergesort was working, our output was inconsistent and for some columns it printed all of the rows, and for some only a few hundred.
+We figured out that a buffer we were placing the words in was too short so we lengened it and we get full output now.
 
 Testing:
 To test we used the csv given, however a smaller file might have been easier to work with.

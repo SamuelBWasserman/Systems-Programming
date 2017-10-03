@@ -220,7 +220,7 @@ void print_to_csv(data_row db[], int line_counter) {
       }
       
       if(j != 27){
-      	char tmp[175];
+      	char tmp[200];
         strcpy(tmp,db[i].col[j]);
         strcat(tmp,",\0");
      	fprintf(stdout,tmp);
