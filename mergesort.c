@@ -85,7 +85,7 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
     }
     // String Comp.
     else if (data_type == 0) {
-      int result = strallcmp(temp_left[i].col[column],
+      int result = strcmp(temp_left[i].col[column],
                       temp_right[j].col[column]);
       if (result < 0 || result == 0) {
         db[k] = temp_left[i];
