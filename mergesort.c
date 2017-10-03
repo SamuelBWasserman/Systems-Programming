@@ -85,8 +85,26 @@ void merge(data_row db[], int column, int data_type, int left, int middle,
     }
     // String Comp.
     else if (data_type == 0) {
-      int result = strcmp(temp_left[i].col[column],
+      int result;
+      char *word1;
+      char *word2;
+      const char del[3] = "\"";
+      if(temp_left[i].col[column][0] == '\"' || temp_right[j].col[column][0] == '\"'){
+	if(temp_left[i].col[column][0] == '\"' && temp_right[j].col[column][0] == '\"'){
+	  word1 = strtok(temp_left[i].col[column], del);
+	  word2 = strtok(temp_right[j].col[column], del);
+	  result = strcmp(word1, word2);
+	} else if(temp_left[i].col[column][0] == '\"'){
+	  word1 = strtok(temp_left[i].col[column], del);
+	  result = strcmp(word1, temp_right[j].col[column]);
+	} else{
+	  word2 = strtok(temp_right[j].col[column], del);
+	  result = strcmp(temp_left[i].col[column], word2);
+	}
+      } else { 
+      result = strcmp(temp_left[i].col[column],
                       temp_right[j].col[column]);
+      }
       if (result < 0 || result == 0) {
         db[k] = temp_left[i];
         i++;
