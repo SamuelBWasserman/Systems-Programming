@@ -12,7 +12,7 @@ typedef struct data_rows {
 // new sorted array of rows.
 int strallcmp(char const *a, char const *b);
 char * strtok_blanks (char * str, char const * delims);
-void print_to_csv(data_row[],int);
-void merge(data_row db[], int column, int data_type, int left, int middle,
+void print_to_csv(data_row**,int);
+void merge(data_row **db, int column, int data_type, int left, int middle,
            int right);
 #endif

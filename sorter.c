@@ -12,7 +12,8 @@ int main(int argc, char **(argv)) {
   }
   char delims[] = ",";
   // Define variables
-  data_row *db = (data_row*)malloc(sizeof(data_row)); // 1 data row
+  data_row **db = (data_row**)malloc(sizeof(data_row)); // 1 data row
+  db[0] = (data_row*) malloc(sizeof(data_row));
   char line[600]; // one line from the file
   int line_counter =
       -1; // count what line we're on to keep track of the struct array
@@ -79,25 +80,26 @@ int main(int argc, char **(argv)) {
 	strcat(buffer, ",\0");
         strcat(buffer, word);
 	strcat(buffer, "\0");
-        db[line_counter].col[word_counter] =
+        db[line_counter]->col[word_counter] =
             (char *)malloc((strlen(buffer) + 1) * sizeof(char));
-	strcpy(db[line_counter].col[word_counter], buffer);
+	strcpy(db[line_counter]->col[word_counter], buffer);
 	word_counter++;
 	word = strtok(NULL,",");
 	continue;
       }
       // Allocate enough space for the string to be placed in the array
-      db[line_counter].col[word_counter] =
+      db[line_counter]->col[word_counter] =
 	    (char *)malloc((strlen(word) + 1) * sizeof(char));
       // Copy the string into the array and add trailing string ender
-      strcpy(db[line_counter].col[word_counter], word);
+      strcpy(db[line_counter]->col[word_counter], word);
       // Move to the next token
       word_counter++;
       word = strtok(NULL, delims);
     }
     word_counter = 0;
     line_counter++;
-    db = (data_row*)realloc(db, sizeof(data_row) * (line_counter + 1));
+    db = (data_row**)realloc(db, (sizeof(data_row) * (line_counter + 1)));
+    db[line_counter] = (data_row*)malloc(sizeof(data_row));
   }
   int column_to_sort; // will be passed to merge sort
   if (strcmp(argv[2], "color") == 0)
@@ -207,12 +209,12 @@ int NullCheck(char *str1, char *str2){
   }
 }
 
-void print_to_csv(data_row db[], int line_counter) {
+void print_to_csv(data_row **db, int line_counter) {
   int i, j;
   for (i = 0; i < line_counter; i++) {
     for (j = 0; j < 28; j++) {
     
-      if(strstr(db[i].col[j],"NULL") != NULL){
+      if(strstr(db[i]->col[j],"NULL") != NULL){
 	    fprintf(stdout,",");
 	    if(j == 27){
 	        fprintf(stdout,"\n");
@@ -222,12 +224,12 @@ void print_to_csv(data_row db[], int line_counter) {
       
       if(j != 27){
       	char tmp[200];
-        strcpy(tmp,db[i].col[j]);
+        strcpy(tmp,db[i]->col[j]);
         strcat(tmp,",\0");
      	fprintf(stdout,tmp);
      	continue;
 	  }
-      fprintf(stdout,db[i].col[j]);
+      fprintf(stdout,db[i]->col[j]);
     }
   }
 }
