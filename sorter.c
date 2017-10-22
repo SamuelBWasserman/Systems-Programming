@@ -175,7 +175,7 @@ int main(int argc, char **(argv)) {
   } else {
     type_flag = 0;
   }
-  sort(db, column_to_sort, type_flag, 0, line_counter - 1);
+  //sort(db, column_to_sort, type_flag, 0, line_counter - 1);
   print_to_csv(db, line_counter);
   return 0;
 }
