@@ -12,8 +12,8 @@ int main(int argc, char **(argv)) {
   }
   char delims[] = ",";
   // Define variables
-  data_row db[5045];        // enough space to store every row
-  char line[600];           // one line from the file
+  data_row *db = (data_row*)malloc(sizeof(data_row)); // 1 data row
+  char line[600]; // one line from the file
   int line_counter =
       -1; // count what line we're on to keep track of the struct array
   int word_counter =
@@ -97,6 +97,7 @@ int main(int argc, char **(argv)) {
     }
     word_counter = 0;
     line_counter++;
+    db = (data_row*)realloc(db, sizeof(data_row) * (line_counter + 1));
   }
   int column_to_sort; // will be passed to merge sort
   if (strcmp(argv[2], "color") == 0)
