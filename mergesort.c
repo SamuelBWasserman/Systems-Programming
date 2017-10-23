@@ -42,10 +42,10 @@ void merge(data_row **db, int column, int data_type, int left, int middle,
   
   // Copy data into the temp arrays
   for (i = 0; i < size1; i++) {
-    temp_left[i] = (data_row*) db[left + i];
+    temp_left[i] = db[left + i];
   }
   for (j = 0; j < size2; j++) {
-    temp_right[j] = (data_row*)db[middle + 1 + j];
+    temp_right[j] = db[middle + 1 + j];
   }
 
   // reset indices
