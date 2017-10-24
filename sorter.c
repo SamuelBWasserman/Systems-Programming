@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 int main(int argc, char **(argv)) {
   // Quit if # of arguments are incorrect
@@ -16,7 +17,7 @@ int main(int argc, char **(argv)) {
   int num_processes = 1;
   // Array to store 
   int *pid_list = (int *)(malloc(sizeof(int)));
-  int **pid_ptr = pid_list;
+  int **pid_ptr = &pid_list;
   
   // Write initial PID to stdout
   printf("Initial PID: %d", getpid());
@@ -38,24 +39,28 @@ int main(int argc, char **(argv)) {
     if(strstr(entry->d_name,".csv") != NULL){
         int pid = fork();
         switch(pid){
+            FILE *csv_file;
             case 0: // This is the child
-                FILE *fopen(entry->d_name, 'r');
-                // process_csv() somehow
-                // print to file somehow
+                csv_file = fopen(entry->d_name, "r");
+                // TODO: process_csv() somehow
+                // TODO: print to file somehow
                 return 0; // End process
                 
             case -1: // This is bad
-          
+                break;
             default: // This is the parent
                 // Put child process in list
-                **pid_pidptr = pid;
+                **pid_ptr = pid;
                 pid_ptr++;
                 continue; // Continue processing
+                break;
         }
     } // End of .csv processing
     
+    
+    // TODO: Implement this
     struct stat s;
-    if( stat(path,&s) == 0 ){
+    if( stat(entry->d_name,&s) == 0 ){
         if( s.st_mode & S_IFDIR ) //it's a directory
         {
             
