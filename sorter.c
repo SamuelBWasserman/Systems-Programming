@@ -72,6 +72,7 @@ int main(int argc, char **(argv)) {
   }
   
   
+  //Modular function for reading, sorting CSV
   process_csv(argv);
   
   return 0;
@@ -99,6 +100,7 @@ int determine_data_type(int column_to_sort){
 
 int column_to_sort(char **(argv)){
   int column_to_sort; // will be passed to merge sort
+
   if (strcmp(argv[2], "color") == 0)
     column_to_sort = 0;
   else if (strcmp(argv[2], "director_name") == 0)
@@ -155,6 +157,7 @@ int column_to_sort(char **(argv)){
     column_to_sort = 26;
   else if (strcmp(argv[2], "movie_facebook_likes") == 0)
     column_to_sort = 27;
+
   return column_to_sort;
 }
 
@@ -190,8 +193,8 @@ int NullCheck(char *str1, char *str2){
 
 
 void process_csv(char **(argv)){
+  //Define variables here
   char delims[] = ",";
-  // Define variables
   data_row **db = (data_row**)malloc(sizeof(data_row)); // 1 data row
   db[0] = (data_row*) malloc(sizeof(data_row));
   char line[600]; // one line from the file

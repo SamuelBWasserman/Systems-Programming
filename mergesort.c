@@ -91,21 +91,22 @@ void merge(data_row **db, int column, int data_type, int left, int middle,
       int result;
       char *word1;
       char *word2;
-      const char del[3] = "\"";
+
+      //IF one of the strings has a '\"' in the beginning
       if(temp_left[i]->col[column][0] == '\"' || temp_right[j]->col[column][0] == '\"'){
 	if(temp_left[i]->col[column][0] == '\"' && temp_right[j]->col[column][0] == '\"'){
-	  word2 = malloc(strlen(temp_right[j]->col[column]) * sizeof(char)); 
-	  word1 = malloc(strlen(temp_left[i]->col[column]) * sizeof(char));
-	  word1 = strtok(temp_left[i]->col[column], del);
-	  word2 = strtok(temp_right[j]->col[column], del);
+	  word2 = temp_right[j]->col[column];
+	  word2++; 
+	  word1 = temp_left[i]->col[column];
+	  word1++;
 	  result = strcmp(word1, word2);
 	} else if(temp_left[i]->col[column][0] == '\"'){
-	  word1 = malloc(strlen(temp_left[i]->col[column]) * sizeof(char));
-	  word1 = strtok(temp_left[i]->col[column], del);
+	  word1 = temp_left[i]->col[column];
+	  word1++;
 	  result = strcmp(word1, temp_right[j]->col[column]);
 	} else{
-	  word2 = malloc(strlen(temp_right[j]->col[column]) * sizeof(char));  
-	  word2 = strtok(temp_right[j]->col[column], del);
+	  word2 = temp_right[j]->col[column];  
+	  word2++;
 	  result = strcmp(temp_left[i]->col[column], word2);
 	}
       } else { 
