@@ -1,15 +1,76 @@
+#include "mergesort.c"
 #include "sorter.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "mergesort.c"
+#include <unistd.h>
+#include <dirent.h>
 
 int main(int argc, char **(argv)) {
   // Quit if # of arguments are incorrect
-  if (argc < 3 || argc > 3) {
+  if (argc < 4 || argc > 7) {
     printf("invalid arguments\n");
     return 0;
   }
+  // Master count of processes
+  int num_processes = 1;
+  // Array to store 
+  int *pid_list = (int *)(malloc(sizeof(int)));
+  int **pid_ptr = pid_list;
+  
+  // Write initial PID to stdout
+  printf("Initial PID: %d", getpid());
+  
+  // Open the given directory
+  struct dirent *entry;
+  DIR *directory;
+  directory = opendir(argv[4]);
+  // Check for NULL
+  if(directory == NULL){
+     printf("Invalid path");
+     return 0;
+  }
+  
+  
+  // Begin traversing directory
+  while(entry = readdir(directory)){
+    // If the current file is a csv, fork and sort
+    if(strstr(entry->d_name,".csv") != NULL){
+        int pid = fork();
+        switch(pid){
+            case 0: // This is the child
+                FILE *fopen(entry->d_name, 'r');
+                // process_csv() somehow
+                // print to file somehow
+                return 0; // End process
+                
+            case -1: // This is bad
+          
+            default: // This is the parent
+                // Put child process in list
+                **pid_pidptr = pid;
+                pid_ptr++;
+                continue; // Continue processing
+        }
+    } // End of .csv processing
+    
+    struct stat s;
+    if( stat(path,&s) == 0 ){
+        if( s.st_mode & S_IFDIR ) //it's a directory
+        {
+            
+        }
+        else if( s.st_mode & S_IFREG ) //it's a file
+        {
+            
+        }
+        else //something else
+        {
+            
+        }
+    }
+  }
+  
   
   process_csv(argv);
   
