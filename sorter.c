@@ -43,7 +43,8 @@ int main(int argc, char **(argv)) {
             case 0: // This is the child
                 csv_file = fopen(entry->d_name, "r");
                 // TODO: process_csv() somehow
-                // TODO: print to file somehow
+                process_csv(argv, csv_file);
+		// TODO: print to file somehow
                 return 0; // End process
                 
             case -1: // This is bad
@@ -75,11 +76,6 @@ int main(int argc, char **(argv)) {
         }
     }
   }
-  
-  
-  //Modular function for reading, sorting CSV
-  process_csv(argv);
-  
   return 0;
 }
 
@@ -197,7 +193,7 @@ int NullCheck(char *str1, char *str2){
 
 
 
-void process_csv(char **(argv)){
+void process_csv(char **(argv),FILE *csv_file){
   //Define variables here
   char delims[] = ",";
   data_row **db = (data_row**)malloc(sizeof(data_row)); // 1 data row
@@ -209,17 +205,13 @@ void process_csv(char **(argv)){
       0; // keep track of what word were on for assignment in the struct
   int type_flag = 0; // 0:STRING, 1:INT, 2:FLOAT
 
-  while (fgets(line, 600, stdin) != NULL) {
-    // Print first line to csv
-    if(line_counter == -1){
-        fprintf(stdout, line);
-    }
+  while (fgets(line, 600, csv_file) != NULL) {
     int i;
-    //IF first char is ',' in the line
     if(line_counter < 0){
       line_counter++;
       continue;
     }
+    //IF first char is ',' in the line
     if(line[0] == ','){
              char null_val[15];
 	     char templine[600];
@@ -292,18 +284,26 @@ void process_csv(char **(argv)){
   type_flag = determine_data_type(column_to_sort(argv));
   int column = column_to_sort(argv);
   sort(db, column, type_flag, 0, line_counter - 1);
-  print_to_csv(db, line_counter);
+  // TODO: create file path name ie) ..'/files/file.csv'
+  print_to_csv(db, line_counter, "");
 }
 
 
 
-void print_to_csv(data_row **db, int line_counter) {
+void print_to_csv(data_row **db, int line_counter, char *file_path_name) {
+  FILE *f;
+  f = fopen(file_path_name, "w");
   int i, j;
-  for (i = 0; i < line_counter; i++) {
+  for (i = -1; i < line_counter; i++) {
+    //TODO: Print first line to csv
+    if(line_counter == -1){
+    	// fprintf(f, );
+    	continue;
+    }
     for (j = 0; j < 28; j++) {
     
       if(strstr(db[i]->col[j],"NULL") != NULL){
-	    fprintf(stdout,",");
+	    fprintf(f,",");
 	    if(j == 27){
 	        fprintf(stdout,"\n");
 	    }
@@ -314,10 +314,10 @@ void print_to_csv(data_row **db, int line_counter) {
       	char tmp[200];
         strcpy(tmp,db[i]->col[j]);
         strcat(tmp,",\0");
-     	fprintf(stdout,tmp);
+     	fprintf(f,tmp);
      	continue;
 	  }
-      fprintf(stdout,db[i]->col[j]);
+      fprintf(f,db[i]->col[j]);
     }
    }
 }
