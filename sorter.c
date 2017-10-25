@@ -21,7 +21,6 @@ int main(int argc, char **(argv)) {
   
   // Write initial PID to stdout
   printf("Initial PID: %d", getpid());
-  
   // Open the given directory
   struct dirent *entry;
   DIR *directory;
@@ -62,15 +61,19 @@ int main(int argc, char **(argv)) {
     if( stat(entry->d_name,&s) == 0 ){
         if( s.st_mode & S_IFDIR ) //it's a directory
         {
-            
+           int pid = fork();
+	   switch(pid){
+	   	case 0:
+			directory = opendir(entry->d_name);
+                        continue;
+		default:
+			continue;			
+ 	   }
+	   
         }
         else if( s.st_mode & S_IFREG ) //it's a file
         {
-            
-        }
-        else //something else
-        {
-            
+            continue;
         }
     }
   }
@@ -194,8 +197,8 @@ int NullCheck(char *str1, char *str2){
 void process_csv(char **(argv),FILE *csv_file){
   //Define variables here
   char *file_path; 
-  if(argv[4] == NULL){
- 	file_path = argv[4];
+  if(argv[6] == NULL){
+ 	file_path = argv[6];
   }
   else{
  	file_path = "";
@@ -311,7 +314,7 @@ void print_to_csv(data_row **db, int line_counter, char *file_path_name) {
       if(strstr(db[i]->col[j],"NULL") != NULL){
 	    fprintf(f,",");
 	    if(j == 27){
-	        fprintf(stdout,"\n");
+	        fprintf(f,"\n");
 	    }
 	    continue;
       }
