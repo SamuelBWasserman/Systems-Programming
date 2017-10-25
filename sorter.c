@@ -42,10 +42,8 @@ int main(int argc, char **(argv)) {
             FILE *csv_file;
             case 0: // This is the child
                 csv_file = fopen(entry->d_name, "r");
-                // TODO: process_csv() somehow
                 process_csv(argv, csv_file);
-		// TODO: print to file somehow
-                return 0; // End process
+  		return 0; // End process
                 
             case -1: // This is bad
                 break;
@@ -195,6 +193,13 @@ int NullCheck(char *str1, char *str2){
 
 void process_csv(char **(argv),FILE *csv_file){
   //Define variables here
+  char *file_path; 
+  if(argv[4] == NULL){
+ 	file_path = argv[4];
+  }
+  else{
+ 	file_path = "";
+  }
   char delims[] = ",";
   data_row **db = (data_row**)malloc(sizeof(data_row)); // 1 data row
   db[0] = (data_row*) malloc(sizeof(data_row));
@@ -284,8 +289,9 @@ void process_csv(char **(argv),FILE *csv_file){
   type_flag = determine_data_type(column_to_sort(argv));
   int column = column_to_sort(argv);
   sort(db, column, type_flag, 0, line_counter - 1);
-  // TODO: create file path name ie) ..'/files/file.csv'
-  print_to_csv(db, line_counter, "");
+  strcat(file_path,"-sorted-");
+  strcat(file_path,argv[2]);
+  print_to_csv(db, line_counter, file_path);
 }
 
 
