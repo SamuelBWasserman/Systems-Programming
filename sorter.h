@@ -13,9 +13,9 @@ typedef struct data_rows {
 // new sorted array of rows.
 int strallcmp(char const *a, char const *b);
 int column_to_sort(char **(argv));
-void process_csv(char **(argv), FILE *csv_file);
+void process_csv(char **(argv), FILE *csv_file, char *);
 char * strtok_blanks (char * str, char const * delims);
-void print_to_csv(data_row**,int, char *);
+void print_to_csv(char **(argv),data_row**,int, char *);
 void merge(data_row **db, int column, int data_type, int left, int middle,
            int right);
 #endif
