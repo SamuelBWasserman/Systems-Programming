@@ -22,10 +22,11 @@ int main(int argc, char **(argv)) {
   int pid_len = 1; //counter for num of ints in 'pid_list'
   int init_pid = getpid(); //get init PID
   pid_list[0] = init_pid; //add to PID_list
+  char buf[_POSIX_PATH_MAX] = {0};                                                                                                                                                                                                                                    
+  char curr_dir[_POSIX_PATH_MAX] = {0};
+  char *path = NULL;
+  strcat(curr_dir, argv[4]);                                                                                                                                                                                                          
   
-  // Keep track of the path to open files
-  char path[200];
-  strcpy(path, argv[4]);
   // Open the given directory
   struct dirent *entry;
   DIR *directory;
@@ -45,26 +46,23 @@ int main(int argc, char **(argv)) {
       if(strstr(entry->d_name,"-sorted-") != NULL){
 	continue;
       }
-        int pid = fork();
-        FILE *csv_file;
-        char file_name[250];
-        
+        int pid = fork();        
         switch(pid){
-            
             case 0: // This is the child
 	          printf("Preparing to process CSV %s\n",entry->d_name);
-	          strcpy(file_name,path);
-	          strcat(file_name,"/");
-	          strcat(file_name,entry->d_name);
-                  printf("PATH: %s\n",file_name);
-                  csv_file = fopen(file_name, "r");
+		  FILE *csv_file;
+		  strcat (curr_dir, "/");
+		  strcat (curr_dir, entry->d_name);
+	          path = realpath(curr_dir, buf);
+		  printf("CSV detected with path: %s\n", buf);
+                  csv_file = fopen(buf, "r");
                   process_csv(argv, csv_file, entry->d_name);
 	          printf("Processed CSV...exiting child process %d\n", pid);
   	          exit(0); // End process
                 
             case -1: //Fork unsuccessfull
 	          printf("Fork Unsuccessfull\n");
-              return 0; //Exit the program
+                  return 0; //Exit the program
 
             default: 
 	          // This is the parent
@@ -97,11 +95,13 @@ int main(int argc, char **(argv)) {
 	   switch(pid){
 	       case 0:
 		     printf("Changing directory to forked dir: %s\n", entry->d_name);
-		     directory = opendir(entry->d_name);
-		     strcat(path,"/");
-		     strcat(path,entry->d_name);
+		     strcat (curr_dir, "/");
+		     strcat (curr_dir, entry->d_name);
+		     path = realpath(curr_dir, buf);
+		     printf("Subdirectory detected with path: %s\n", buf);
+		     directory = opendir(buf);
 		     printf("Done changing directory to dir: %s\n", entry->d_name);
-             break;
+		     break;
 
 	       default:
 		     printf("Adding Child PID %d to PID_list\n", pid);
@@ -396,7 +396,7 @@ void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path
   int i, j;
   for (i = -1; i < line_counter; i++) {
     //TODO: Print first line to csv
-    if(line_counter == -1){
+    if(i == -1){
     	// fprintf(f, );
     	continue;
     }
