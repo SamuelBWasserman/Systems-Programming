@@ -20,10 +20,8 @@ int main(int argc, char **(argv)) {
   // Array to store 
   int *pid_list = (int *)(malloc(sizeof(int)));
   int pid_len = 1; //counter for num of ints in 'pid_list'
-  int **pid_ptr = &pid_list;
-  
-  // Write initial PID to stdout
   int init_pid = getpid(); //get init PID
+  pid_list[0] = init_pid; //add to PID_list
 
   // Open the given directory
   struct dirent *entry;
@@ -48,7 +46,7 @@ int main(int argc, char **(argv)) {
         switch(pid){
             FILE *csv_file;
             case 0: // This is the child
-	      printf("Preparing to process CSV\n");
+	      printf("Preparing to process CSV %s\n",entry->d_name);
               csv_file = fopen(entry->d_name, "r");
               process_csv(argv, csv_file);
 	      printf("Processed CSV...exiting child process %d\n", pid);
@@ -62,10 +60,9 @@ int main(int argc, char **(argv)) {
 	      // This is the parent
               // Put child process in list
 	      printf("Adding Child PID %d to PID_list\n", pid);
-              **pid_ptr = pid;
 	      pid_len++;
 	      pid_list = (int *)realloc(pid_list, pid_len * sizeof(int)); //realloc int array for pointer increment
-              pid_ptr++;
+              pid_list[pid_len-1] = pid;
 	      printf("Added child PID successfully!\n");
 	      printf("Waiting on child process %d\n", pid);
 	      wait(NULL); //To create more parallelism move wait till after all processes have been forked
@@ -79,21 +76,26 @@ int main(int argc, char **(argv)) {
     // QA: Implement directory check
     // DONE: Check that the stat checking is actually checking if it's a directory
     struct stat s;
-    if(fstatat(dirfd(directory),entry->d_name,&s,0) == 0){ //fstatat supports relative pathing. Se we're in the mix 
+    if(fstatat(dirfd(directory),entry->d_name,&s,0) == 0){ //fstatat supports relative pathing. Se we're in the mix
+      //Check to see if the entry is either '.' or '..'
+      if(strcmp(entry->d_name,".") == 0 || strcmp(entry->d_name,"..") == 0){
+	continue;
+      } 
       if(S_ISDIR(s.st_mode)) //it's a directory
         {
            int pid = fork();
 	   switch(pid){
 	       case 0:
+		 printf("Changing directory to forked dir: %s\n", entry->d_name);
 		 directory = opendir(entry->d_name);
+		 printf("Done changing directory to dir: %s\n", entry->d_name);
                  break;
 
 	       default:
-		 printf("Adding Child PID %d to PID_list\n", pid);                                                                                                                                                                                                                   
-		 **pid_ptr = pid;                                                                                                                                                                                                                                                    
+		 printf("Adding Child PID %d to PID_list\n", pid);
 		 pid_len++;
 		 pid_list = (int *)realloc(pid_list, pid_len * sizeof(int)); //realloc int array for pointer increment
-		 pid_ptr++;                                                                                                                                                                   
+		 pid_list[pid_len-1] = pid;                                                                                                                            
 		 printf("Added child PID successfully!\n");  
 		 printf("Waiting on child process %d\n", pid);
 		 wait(NULL); //To create more parallelism move wait till after all processes have been forked
