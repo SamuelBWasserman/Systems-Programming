@@ -89,6 +89,12 @@ int main(int argc, char **(argv)) {
                  break;
 
 	       default:
+		 printf("Adding Child PID %d to PID_list\n", pid);                                                                                                                                                                                                                   
+		 **pid_ptr = pid;                                                                                                                                                                                                                                                    
+		 pid_len++;
+		 pid_list = (int *)realloc(pid_list, pid_len * sizeof(int)); //realloc int array for pointer increment
+		 pid_ptr++;                                                                                                                                                                   
+		 printf("Added child PID successfully!\n");  
 		 printf("Waiting on child process %d\n", pid);
 		 wait(NULL); //To create more parallelism move wait till after all processes have been forked
 		 printf("Done waiting for directory parsing...moving on.\n");
