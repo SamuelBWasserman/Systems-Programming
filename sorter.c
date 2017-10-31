@@ -400,11 +400,8 @@ void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path
   for (i = -1; i < line_counter; i++) {
     //TODO: Print first line to csv
     if(i == -1){
-<<<<<<< HEAD
     	// fprintf(f, );
-=======
     	fprintf(f, first_line);
->>>>>>> a9e1f3bd8253a0ec5721d65930f1afe5116b1544
     	continue;
     }
     for (j = 0; j < 28; j++) {
