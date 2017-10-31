@@ -15,13 +15,12 @@ int main(int argc, char **(argv)) {
     printf("invalid arguments\n");
     return 0;
   }
-  // Master count of processes
-  int num_processes = 1;
   // Array to store 
   int *pid_list = (int *)(malloc(sizeof(int)));
   int pid_len = 1; //counter for num of ints in 'pid_list'
   int init_pid = getpid(); //get init PID
- 
+  int pipefd[2];
+  int pid_buf = 1;
   printf("Metadata Summary\n");
   printf("-----------------------------------------------\n");
   printf("Initial PID: %d\n", init_pid);
@@ -32,8 +31,12 @@ int main(int argc, char **(argv)) {
   char buf[_POSIX_PATH_MAX] = {0};                                                                                                                                                                                                                                    
   char curr_dir[_POSIX_PATH_MAX] = {0};
   char *path = NULL;
-  strcat(curr_dir, argv[4]);                                                                                                                                                                                                          
-  
+  if(argv[4] == NULL){
+	getcwd(curr_dir, 255);
+  }
+  else{
+    strcat(curr_dir, argv[4]);                                                                                                                                                                                                          
+  }
   // Open the given directory
   struct dirent *entry;
   DIR *directory;
@@ -44,7 +47,10 @@ int main(int argc, char **(argv)) {
      return 0;
   }
   
-  
+ if(pipe(pipefd) == -1){
+	perror("pipe");
+	exit(EXIT_FAILURE);
+  } 
   // Begin traversing directory
   while((entry = readdir(directory)) != NULL){
     // If the current file is a csv, fork and sort
@@ -57,12 +63,13 @@ int main(int argc, char **(argv)) {
         switch(pid){
  	    FILE *csv_file;
             case 0: // This is the child
-	          // printf("Preparing to process CSV %s\n",entry->d_name);
+	          pid_len = 0; 
+		  // printf("Preparing to process CSV %s\n",entry->d_name);
 		  strcat (curr_dir, "/");
 		  strcat (curr_dir, entry->d_name);
 	          path = realpath(curr_dir, buf);
 		  // printf("CSV detected with path: %s\n", buf);
-                  csv_file = fopen(buf, "r");
+		  csv_file = fopen(buf, "r");
                   process_csv(argv, csv_file, entry->d_name);
 	          // printf("Processed CSV...exiting child process %d\n", pid);
   	          exit(0); // End process
@@ -103,6 +110,8 @@ int main(int argc, char **(argv)) {
            int pid = fork();
 	   switch(pid){
 	       case 0:
+		     close(pipefd[0]);
+		     pid_len = 1;
 		     // printf("Changing directory to forked dir: %s\n", entry->d_name);
 		     strcat (curr_dir, "/");
 		     strcat (curr_dir, entry->d_name);
@@ -122,6 +131,11 @@ int main(int argc, char **(argv)) {
 		     // printf("Added child PID successfully!\n");  
 		     // printf("Waiting on child process %d\n", pid);
 		     wait(NULL); //To create more parallelism move wait till after all processes have been forked
+		     close(pipefd[1]);
+		     read(pipefd[0],&pid_buf, sizeof(int));
+		     printf("\n%d\n", pid_buf);	     
+		     pid_len+=pid_buf;
+		     close(pipefd[0]);
 		     // printf("Done waiting for directory parsing...moving on.\n");
 		     break;			
  	   }
@@ -130,12 +144,16 @@ int main(int argc, char **(argv)) {
     } // End of directory checking
   } // End of Directory traversal
 
-  //IF current process is child
+  //IF current process is child perform a write
   if(getpid() != init_pid){
-    // printf("Current child process %d is not parent...exiting.\n", getpid());
-    exit(0);
+    //  printf("Current child process %d is not parent...exiting.\n", getpid());
+   close(pipefd[0]);
+   write(pipefd[1], pid_len, sizeof(int)); 
+   close(pipefd[1]);
+   exit(0);
   }
-
+  read(pipefd[0], &pid_buf, sizeof(int));
+  pid_len+=pid_buf;
   //Close the directory and output metadata
   closedir(directory); 
 
@@ -151,7 +169,7 @@ int main(int argc, char **(argv)) {
       printf("%d,", pid_list[i]);
     }
   }*/
-  printf("\nTotal number of processes: %d\n", (pid_len-1)*(pid_len-1));
+  printf("\nTotal number of processes: %d\n", (pid_len-1));
   printf("----------------------------------------------------\n");
   
   //Exit program
