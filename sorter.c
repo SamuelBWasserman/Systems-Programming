@@ -274,7 +274,8 @@ int NullCheck(char *str1, char *str2){
 
 void process_csv(char **(argv),FILE *csv_file, char *file_name){
   if(csv_file == NULL){
-     printf("NULL FILE\n");
+     printf("NULL FILE exiting\n");
+     exit(1);
   }
   // printf("Processing CSV\n");
   //Define variables here
@@ -283,7 +284,8 @@ void process_csv(char **(argv),FILE *csv_file, char *file_name){
  	strcpy(file_path, argv[6]);
   }
   else{
- 	strcpy(file_path,"");
+	// If no output directory is given, process in same directory as files
+ 	strcpy(file_path,argv[4]);
   }
   char *first_line;
   strcat(file_path, "/");
