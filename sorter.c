@@ -11,7 +11,7 @@
 
 int main(int argc, char **(argv)) {
   // Quit if # of arguments are incorrect
-  if (argc < 4 || argc > 7) {
+  if (argc < 2 || argc > 7) {
     printf("invalid arguments\n");
     return 0;
   }
@@ -19,10 +19,9 @@ int main(int argc, char **(argv)) {
   int *pid_list = (int *)(malloc(sizeof(int)));
   int pid_len = 1; //counter for num of ints in 'pid_list'
   int init_pid = getpid(); //get init PID
-  int pipefd[2];
-  int pid_buf = 1;
+  int status; //counts the # of processes hehehehehe
   printf("Metadata Summary\n");
-  printf("-----------------------------------------------\n");
+  printf("----------------------------------------------------\n");
   printf("Initial PID: %d\n", init_pid);
   printf("pid's of all child processes: ");
   fflush(stdout); 
@@ -31,26 +30,23 @@ int main(int argc, char **(argv)) {
   char buf[_POSIX_PATH_MAX] = {0};                                                                                                                                                                                                                                    
   char curr_dir[_POSIX_PATH_MAX] = {0};
   char *path = NULL;
-  if(argv[4] == NULL){
-	getcwd(curr_dir, 255);
-  }
-  else{
-    strcat(curr_dir, argv[4]);                                                                                                                                                                                                          
-  }
-  // Open the given directory
   struct dirent *entry;
   DIR *directory;
-  directory = opendir(argv[4]);
+  //check to see if the third and fourth parameter is provided
+  if(strcmp(argv[3], "-d") != 0){
+	getcwd(curr_dir, 255);
+	directory = opendir(curr_dir);
+  }
+  else{
+    strcat(curr_dir, argv[4]);
+    directory = opendir(argv[4]);                                                                                                                                                                                                          
+  }
   // Check for NULL
   if(directory == NULL){
      printf("Invalid path\n");
      return 0;
   }
   
- if(pipe(pipefd) == -1){
-	perror("pipe");
-	exit(EXIT_FAILURE);
-  } 
   // Begin traversing directory
   while((entry = readdir(directory)) != NULL){
     // If the current file is a csv, fork and sort
@@ -63,16 +59,12 @@ int main(int argc, char **(argv)) {
         switch(pid){
  	    FILE *csv_file;
             case 0: // This is the child
-	          pid_len = 0; 
-		  // printf("Preparing to process CSV %s\n",entry->d_name);
 		  strcat (curr_dir, "/");
 		  strcat (curr_dir, entry->d_name);
 	          path = realpath(curr_dir, buf);
-		  // printf("CSV detected with path: %s\n", buf);
 		  csv_file = fopen(buf, "r");
                   process_csv(argv, csv_file, entry->d_name);
-	          // printf("Processed CSV...exiting child process %d\n", pid);
-  	          exit(0); // End process
+  	          exit(1); // End process
                  
             case -1: //Fork unsuccessfull
 	          printf("Fork Unsuccessfull\n");
@@ -80,16 +72,10 @@ int main(int argc, char **(argv)) {
 
             default: 
 	          // This is the parent
-                  // Put child process in list
-	          // printf("Adding Child PID %d to PID_list\n", pid);
-	          pid_len++;
-	          pid_list = (int *)realloc(pid_list, pid_len * sizeof(int)); //realloc int array for pointer increment
-                  pid_list[pid_len-1] = pid;
  		  printf("%d,",pid);
 		  fflush(stdout);
-	          // printf("Added child PID successfully!\n");
-	          // printf("Waiting on child process %d\n", pid);
-	          wait(NULL); //To create more parallelism move wait till after all processes have been forked
+	          waitpid(pid, NULL, 0);
+		  pid_len++;
 	          // printf("Done waiting for CSV file processing...Moving on.\n");
               break;
         }
@@ -110,33 +96,19 @@ int main(int argc, char **(argv)) {
            int pid = fork();
 	   switch(pid){
 	       case 0:
-		     close(pipefd[0]);
-		     pid_len = 1;
-		     // printf("Changing directory to forked dir: %s\n", entry->d_name);
+		     pid_len = 0;
 		     strcat (curr_dir, "/");
 		     strcat (curr_dir, entry->d_name);
 		     path = realpath(curr_dir, buf);
-		     // printf("Subdirectory detected with path: %s\n", buf);
 		     directory = opendir(buf);
-		     // printf("Done changing directory to dir: %s\n", entry->d_name);
 		     break;
 
 	       default:
-		     // printf("Adding Child PID %d to PID_list\n", pid);
-		     pid_len++;
-		     pid_list = (int *)realloc(pid_list, pid_len * sizeof(int)); //realloc int array for pointer increment
-		     pid_list[pid_len-1] = pid;
 		     printf("%d,",pid); 
 		     fflush(stdout);                                                                                                                           
-		     // printf("Added child PID successfully!\n");  
-		     // printf("Waiting on child process %d\n", pid);
-		     wait(NULL); //To create more parallelism move wait till after all processes have been forked
-		     close(pipefd[1]);
-		     read(pipefd[0],&pid_buf, sizeof(int));
-		     printf("\n%d\n", pid_buf);	     
-		     pid_len+=pid_buf;
-		     close(pipefd[0]);
-		     // printf("Done waiting for directory parsing...moving on.\n");
+		     waitpid(pid,&status,0);
+		     pid_len++;
+		     pid_len = pid_len + WEXITSTATUS(status);
 		     break;			
  	   }
 	   continue;
@@ -144,32 +116,11 @@ int main(int argc, char **(argv)) {
     } // End of directory checking
   } // End of Directory traversal
 
-  //IF current process is child perform a write
+  //IF current process is child...exit
   if(getpid() != init_pid){
-    //  printf("Current child process %d is not parent...exiting.\n", getpid());
-   close(pipefd[0]);
-   write(pipefd[1], pid_len, sizeof(int)); 
-   close(pipefd[1]);
-   exit(0);
+   exit(pid_len);
   }
-  read(pipefd[0], &pid_buf, sizeof(int));
-  pid_len+=pid_buf;
-  //Close the directory and output metadata
-  closedir(directory); 
-
-  /* printf("----------------------------------------------------\n");
-  // printf("METADATA SUMMARY                                    \n");
-  // printf("Initial PID: %d\n", init_pid);
-  // printf("PIDs of all the child processes: ");
-  int i ;
-  for(i=0; i < pid_len; i++){
-    if(i == (pid_len-1))
-      printf("%d\n", pid_list[i]);
-    else{
-      printf("%d,", pid_list[i]);
-    }
-  }*/
-  printf("\nTotal number of processes: %d\n", (pid_len-1));
+  printf("\nTotal number of processes: %d\n", pid_len);
   printf("----------------------------------------------------\n");
   
   //Exit program
@@ -420,8 +371,11 @@ void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path
   // printf("%s\n",file_path_name);
   struct stat st = {0};
   char buffer[200];
-  if (stat(argv[6], &st) == -1) {
+  //Check to see if arg 5 and 6 are provided 
+  if (strcmp(argv[5],"-o") == 0 && stat(argv[6], &st) == -1) {
     mkdir(argv[6], 0700);
+  } else if(strcmp(argv[3], "-o") == 0 && stat(argv[4], &st) == -1){
+    mkdir(argv[4], 0700);
   }
   
   FILE *f;
