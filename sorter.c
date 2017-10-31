@@ -21,6 +21,13 @@ int main(int argc, char **(argv)) {
   int *pid_list = (int *)(malloc(sizeof(int)));
   int pid_len = 1; //counter for num of ints in 'pid_list'
   int init_pid = getpid(); //get init PID
+ 
+  printf("Metadata Summary\n");
+  printf("-----------------------------------------------\n");
+  printf("Initial PID: %d\n", init_pid);
+  printf("pid's of all child processes: ");
+  fflush(stdout); 
+
   pid_list[0] = init_pid; //add to PID_list
   char buf[_POSIX_PATH_MAX] = {0};                                                                                                                                                                                                                                    
   char curr_dir[_POSIX_PATH_MAX] = {0};
@@ -48,18 +55,18 @@ int main(int argc, char **(argv)) {
       }
         int pid = fork();        
         switch(pid){
+ 	    FILE *csv_file;
             case 0: // This is the child
-	          printf("Preparing to process CSV %s\n",entry->d_name);
-		  FILE *csv_file;
+	          // printf("Preparing to process CSV %s\n",entry->d_name);
 		  strcat (curr_dir, "/");
 		  strcat (curr_dir, entry->d_name);
 	          path = realpath(curr_dir, buf);
-		  printf("CSV detected with path: %s\n", buf);
+		  // printf("CSV detected with path: %s\n", buf);
                   csv_file = fopen(buf, "r");
                   process_csv(argv, csv_file, entry->d_name);
-	          printf("Processed CSV...exiting child process %d\n", pid);
+	          // printf("Processed CSV...exiting child process %d\n", pid);
   	          exit(0); // End process
-                
+                 
             case -1: //Fork unsuccessfull
 	          printf("Fork Unsuccessfull\n");
                   return 0; //Exit the program
@@ -67,14 +74,16 @@ int main(int argc, char **(argv)) {
             default: 
 	          // This is the parent
                   // Put child process in list
-	          printf("Adding Child PID %d to PID_list\n", pid);
+	          // printf("Adding Child PID %d to PID_list\n", pid);
 	          pid_len++;
 	          pid_list = (int *)realloc(pid_list, pid_len * sizeof(int)); //realloc int array for pointer increment
                   pid_list[pid_len-1] = pid;
-	          printf("Added child PID successfully!\n");
-	          printf("Waiting on child process %d\n", pid);
+ 		  printf("%d,",pid);
+		  fflush(stdout);
+	          // printf("Added child PID successfully!\n");
+	          // printf("Waiting on child process %d\n", pid);
 	          wait(NULL); //To create more parallelism move wait till after all processes have been forked
-	          printf("Done waiting for CSV file processing...Moving on.\n");
+	          // printf("Done waiting for CSV file processing...Moving on.\n");
               break;
         }
 	continue; //Continue processing
@@ -94,24 +103,26 @@ int main(int argc, char **(argv)) {
            int pid = fork();
 	   switch(pid){
 	       case 0:
-		     printf("Changing directory to forked dir: %s\n", entry->d_name);
+		     // printf("Changing directory to forked dir: %s\n", entry->d_name);
 		     strcat (curr_dir, "/");
 		     strcat (curr_dir, entry->d_name);
 		     path = realpath(curr_dir, buf);
-		     printf("Subdirectory detected with path: %s\n", buf);
+		     // printf("Subdirectory detected with path: %s\n", buf);
 		     directory = opendir(buf);
-		     printf("Done changing directory to dir: %s\n", entry->d_name);
+		     // printf("Done changing directory to dir: %s\n", entry->d_name);
 		     break;
 
 	       default:
-		     printf("Adding Child PID %d to PID_list\n", pid);
+		     // printf("Adding Child PID %d to PID_list\n", pid);
 		     pid_len++;
 		     pid_list = (int *)realloc(pid_list, pid_len * sizeof(int)); //realloc int array for pointer increment
-		     pid_list[pid_len-1] = pid;                                                                                                                            
-		     printf("Added child PID successfully!\n");  
-		     printf("Waiting on child process %d\n", pid);
+		     pid_list[pid_len-1] = pid;
+		     printf("%d,",pid); 
+		     fflush(stdout);                                                                                                                           
+		     // printf("Added child PID successfully!\n");  
+		     // printf("Waiting on child process %d\n", pid);
 		     wait(NULL); //To create more parallelism move wait till after all processes have been forked
-		     printf("Done waiting for directory parsing...moving on.\n");
+		     // printf("Done waiting for directory parsing...moving on.\n");
 		     break;			
  	   }
 	   continue;
@@ -121,17 +132,17 @@ int main(int argc, char **(argv)) {
 
   //IF current process is child
   if(getpid() != init_pid){
-    printf("Current child process %d is not parent...exiting.\n", getpid());
+    // printf("Current child process %d is not parent...exiting.\n", getpid());
     exit(0);
   }
 
   //Close the directory and output metadata
   closedir(directory); 
 
-  printf("----------------------------------------------------\n");
-  printf("METADATA SUMMARY                                    \n");
-  printf("Initial PID: %d\n", init_pid);
-  printf("PIDs of all the child processes: ");
+  /* printf("----------------------------------------------------\n");
+  // printf("METADATA SUMMARY                                    \n");
+  // printf("Initial PID: %d\n", init_pid);
+  // printf("PIDs of all the child processes: ");
   int i ;
   for(i=0; i < pid_len; i++){
     if(i == (pid_len-1))
@@ -139,10 +150,10 @@ int main(int argc, char **(argv)) {
     else{
       printf("%d,", pid_list[i]);
     }
-  }
-  printf("Total number of processes: %d\n", pid_len-1);
+  }*/
+  printf("\nTotal number of processes: %d\n", (pid_len-1)*(pid_len-1));
   printf("----------------------------------------------------\n");
-
+  
   //Exit program
   return 0;
 }
@@ -265,7 +276,7 @@ void process_csv(char **(argv),FILE *csv_file, char *file_name){
   if(csv_file == NULL){
      printf("NULL FILE\n");
   }
-  printf("Processing CSV\n");
+  // printf("Processing CSV\n");
   //Define variables here
   char file_path[50];
   if(argv[6] != NULL){
@@ -276,7 +287,7 @@ void process_csv(char **(argv),FILE *csv_file, char *file_name){
   }
   char *first_line;
   strcat(file_path, "/");
-  printf("%s\n",file_path);
+  // printf("%s\n",file_path);
   char delims[] = ",";
   data_row **db = (data_row**)malloc(sizeof(data_row)); // 1 data row
   db[0] = (data_row*) malloc(sizeof(data_row));
@@ -385,8 +396,8 @@ void process_csv(char **(argv),FILE *csv_file, char *file_name){
 
 
 void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path_name, char *first_line) {
-  printf("Printing to CSV\n");
-  printf("%s\n",file_path_name);
+  // printf("Printing to CSV\n");
+  // printf("%s\n",file_path_name);
   struct stat st = {0};
   char buffer[200];
   if (stat(argv[6], &st) == -1) {
@@ -395,7 +406,7 @@ void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path
   
   FILE *f;
   f = fopen(file_path_name, "w");
-  printf("opened");
+  // printf("opened");
   int i, j;
   for (i = -1; i < line_counter; i++) {
     //TODO: Print first line to csv
@@ -424,5 +435,5 @@ void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path
       fprintf(f,db[i]->col[j]);
     }
    }
-printf("Printed csv");
+// printf("Printed csv");
 }
