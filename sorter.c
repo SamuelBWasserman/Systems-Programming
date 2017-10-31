@@ -274,6 +274,7 @@ void process_csv(char **(argv),FILE *csv_file, char *file_name){
   else{
  	strcpy(file_path,"");
   }
+  char *first_line;
   strcat(file_path, "/");
   printf("%s\n",file_path);
   char delims[] = ",";
@@ -290,6 +291,8 @@ void process_csv(char **(argv),FILE *csv_file, char *file_name){
     int i;
     if(line_counter < 0){
       line_counter++;
+      first_line = (char *) malloc(sizeof(char)*strlen(line)+1);
+      strcpy(first_line,line);
       continue;
     }
     //IF first char is ',' in the line
@@ -376,12 +379,12 @@ void process_csv(char **(argv),FILE *csv_file, char *file_name){
   strcat(file_path,"-sorted-");
   strcat(file_path,argv[2]);
   strcat(file_path,".csv");
-  print_to_csv(argv, db, line_counter, file_path);
+  print_to_csv(argv, db, line_counter, file_path, first_line);
 }
 
 
 
-void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path_name) {
+void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path_name, char *first_line) {
   printf("Printing to CSV\n");
   printf("%s\n",file_path_name);
   struct stat st = {0};
@@ -397,7 +400,11 @@ void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path
   for (i = -1; i < line_counter; i++) {
     //TODO: Print first line to csv
     if(i == -1){
+<<<<<<< HEAD
     	// fprintf(f, );
+=======
+    	fprintf(f, first_line);
+>>>>>>> a9e1f3bd8253a0ec5721d65930f1afe5116b1544
     	continue;
     }
     for (j = 0; j < 28; j++) {
