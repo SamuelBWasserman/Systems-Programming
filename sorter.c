@@ -127,7 +127,20 @@ int main(int argc, char **(argv)) {
   return 0;
 }
 
-
+// This function will check if the given csv has 28 columns and fail if it does not
+int is_csv_correct(char *first_line){
+	int column_count = 0;
+	char *token;
+	token = strtok(first_line, ",");
+	while(token != NULL){
+		column_count++;
+		token = strtok(NULL, ",");
+	}
+	printf("%d\n", column_count);
+	if(column_count == 28)
+		return 1;
+	return 0;
+}
 
 int determine_data_type(int column_to_sort){
   int type_flag = 0; // 0:STRING, 1:INT, 2:FLOAT
@@ -275,6 +288,10 @@ void process_csv(char **(argv),FILE *csv_file, char *file_name){
       line_counter++;
       first_line = (char *) malloc(sizeof(char)*strlen(line)+1);
       strcpy(first_line,line);
+      if(!(is_csv_correct(first_line))){
+        printf("Incorrect CSV");
+        return;
+      }
       continue;
     }
     //IF first char is ',' in the line
