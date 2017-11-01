@@ -136,7 +136,6 @@ int is_csv_correct(char *first_line){
 		column_count++;
 		token = strtok(NULL, ",");
 	}
-	printf("%d\n", column_count);
 	if(column_count == 28)
 		return 1;
 	return 0;
