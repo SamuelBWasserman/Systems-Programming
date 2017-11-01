@@ -63,7 +63,7 @@ int main(int argc, char **(argv)) {
 		  strcat (curr_dir, entry->d_name);
 	          path = realpath(curr_dir, buf);
 		  csv_file = fopen(buf, "r");
-                  process_csv(argv, csv_file, entry->d_name);
+                  process_csv(argc, argv, csv_file, entry->d_name);
   	          exit(1); // End process
                  
             case -1: //Fork unsuccessfull
@@ -253,16 +253,24 @@ int NullCheck(char *str1, char *str2){
 
 
 
-void process_csv(char **(argv),FILE *csv_file, char *file_name){
+void process_csv(int argc, char **(argv),FILE *csv_file, char *file_name){
   if(csv_file == NULL){
      printf("NULL FILE exiting\n");
      exit(1);
   }
   // printf("Processing CSV\n");
   //Define variables here
+  // Check if an output directory is given
+  int is_output_specified = 0;
+  int j;
+  for(j = 0;j < argc; j++){
+   if(strcmp(argv[j], "-o") == 0)
+	is_output_specified = 1;	
+  }
   char file_path[50];
-  if(argv[6] != NULL){
+  if(is_output_specified){
  	strcpy(file_path, argv[6]);
+	mkdir(argv[6], 0700);
   }
   else{
 	// If no output directory is given, process in same directory as files
@@ -387,19 +395,15 @@ void print_to_csv(char **(argv),data_row **db, int line_counter, char *file_path
   // printf("%s\n",file_path_name);
   struct stat st = {0};
   char buffer[200];
+  //TODO BAD BAD BAD
   //Check to see if arg 5 and 6 are provided 
-  if (strcmp(argv[5],"-o") == 0 && stat(argv[6], &st) == -1) {
-    mkdir(argv[6], 0700);
-  } else if(strcmp(argv[3], "-o") == 0 && stat(argv[4], &st) == -1){
-    mkdir(argv[4], 0700);
-  }
   
   FILE *f;
   f = fopen(file_path_name, "w");
   // printf("opened");
   int i, j;
   for (i = -1; i < line_counter; i++) {
-    //TODO: Print first line to csv
+    //Print first line to csv
     if(i == -1){
     	// fprintf(f, );
     	fprintf(f, first_line);

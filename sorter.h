@@ -13,7 +13,7 @@ typedef struct data_rows {
 // new sorted array of rows.
 int strallcmp(char const *a, char const *b);
 int column_to_sort(char **(argv));
-void process_csv(char **(argv), FILE *csv_file, char *);
+void process_csv(int argc,char **(argv), FILE *csv_file, char *);
 char * strtok_blanks (char * str, char const * delims);
 int is_csv_correct(char *first_line);
 void print_to_csv(char **(argv),data_row**,int, char *, char *);
