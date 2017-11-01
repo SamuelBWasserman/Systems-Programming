@@ -32,15 +32,23 @@ int main(int argc, char **(argv)) {
   char *path = NULL;
   struct dirent *entry;
   DIR *directory;
-  //check to see if the third and fourth parameter is provided
-  if(strcmp(argv[3], "-d") != 0){
-	getcwd(curr_dir, 255);
-	directory = opendir(curr_dir);
+  int is_directory_specified = 0;
+  int p;
+  for(p = 0; p < argc; p++){
+  	if(strcmp(argv[p],"-d") == 0)
+   		is_directory_specified = 1;
   }
-  else{
-    strcat(curr_dir, argv[4]);
-    directory = opendir(argv[4]);                                                                                                                                                                                                          
+  // If it is not use the current directory
+  if(!is_directory_specified){
+    getcwd(curr_dir, 255);
+    directory = opendir(curr_dir);
   }
+ else{
+   if(argc >= 3){
+     strcat(curr_dir, argv[4]);
+     directory = opendir(argv[4]);
+    }
+ }
   // Check for NULL
   if(directory == NULL){
      printf("Invalid path\n");
@@ -113,6 +121,9 @@ int main(int argc, char **(argv)) {
  	   }
 	   continue;
         }
+      else{
+		continue;
+ 	}
     } // End of directory checking
   } // End of Directory traversal
 
@@ -263,18 +274,33 @@ void process_csv(int argc, char **(argv),FILE *csv_file, char *file_name){
   // Check if an output directory is given
   int is_output_specified = 0;
   int j;
+  int output_index = 0;
   for(j = 0;j < argc; j++){
-   if(strcmp(argv[j], "-o") == 0)
-	is_output_specified = 1;	
+   if(strcmp(argv[j], "-o") == 0){
+	is_output_specified = 1;
+	output_index = j + 1;
+  }	
   }
   char file_path[50];
   if(is_output_specified){
- 	strcpy(file_path, argv[6]);
-	mkdir(argv[6], 0700);
+ 	strcpy(file_path, argv[output_index]);
+	mkdir(argv[output_index], 0700);
   }
   else{
 	// If no output directory is given, process in same directory as files
- 	strcpy(file_path,argv[4]);
+      int is_directory_specified = 0;
+      int p;
+      for(p = 0; p < argc; p++){
+        if(strcmp(argv[p],"-d") == 0)
+          is_directory_specified = 1;
+       }
+       if(is_directory_specified)	
+         strcpy(file_path,argv[4]);
+       else{
+           char curr_dir[_POSIX_PATH_MAX] = {0}; 
+	   getcwd(curr_dir,255);
+	   strcpy(file_path,curr_dir);
+	}
   }
   char *first_line;
   strcat(file_path, "/");
