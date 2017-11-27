@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+ 
+void *threaded_sort(void *args){
+
+}
 
 void sort(data_row **db, int col, int data_type, int left, int right) {
   if (left < right) {

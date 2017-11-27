@@ -1,4 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <pthread.h>
+#include <sys/syscall.h>
 // For the movie data set I counted 28 columns, but for a general CSV,
 // I would need the # of columns as meta data.
 #ifndef SORTER_H
@@ -9,12 +18,20 @@ typedef struct data_rows {
 
 } data_row;
 
+
 typedef struct thread_args{
     int argc;
     char **(argv);
     FILE *csv_file;
     char *file_name;
 } thread_args;
+
+
+typedef struct directory_args{
+    int argc;
+    char **(argv);
+    char curr_dir[_POSIX_PATH_MAX];
+} directory_args;
 
 
 // Merge sort can take in the column number that needs to be sorted and return a
@@ -27,7 +44,7 @@ int is_csv_correct(char *first_line);
 void print_to_csv(char **(argv),data_row**,int, char *, char *);
 void merge(data_row **db, int column, int data_type, int left, int middle,
            int right);
-           
+void *process_dir(void *);
 int column_to_sort(char **(argv)){
   int column_to_sort; // will be passed to merge sort
 
