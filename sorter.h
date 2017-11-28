@@ -20,17 +20,17 @@ typedef struct data_rows {
 
 
 typedef struct thread_args{
-    int argc;
-    char **(argv);
-    FILE *csv_file;
-    char *file_name;
+    int argc; // Command line argc
+    char **(argv); // Command line argv
+    FILE *csv_file; // Pointer to the CSV file to add
+    char *file_name; // String name of the file to read
 } thread_args;
 
 
 typedef struct directory_args{
-    int argc;
-    char **(argv);
-    char curr_dir[_POSIX_PATH_MAX];
+    int argc; // Holds command line args
+    char **(argv); // Holds more command line args
+    char curr_dir[_POSIX_PATH_MAX]; // Holds information on the current directory for threading
 } directory_args;
 
 
