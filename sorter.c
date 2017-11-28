@@ -12,22 +12,24 @@
 #include <sys/syscall.h>
 
 
+//TODO: MERGESORT HUGE ARRAY AND IMPLEMENT JOINING
+
 // GLOBALS
 // Will lock total_num_threads to increment
 pthread_mutex_t MUTEX = PTHREAD_MUTEX_INITIALIZER;
 int TOTAL_THREADS = 0;
 pthread_t INIT_TID;
-
 pthread_mutex_t DB_LOCK = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t BIG_LINE_COUNTER_LOCK;
 data_row **big_db;
 int BIG_LINE_COUNTER = 0;
+char *first_line;
 
 
 int main(int argc, char **(argv)) {
   big_db = (data_row**)malloc(sizeof(data_row)); // 1 data row
   argc = argc;
-  INIT_TID = gettid();
+  INIT_TID = syscall(SYS_gettid);
   DIR *directory;
   int is_directory_specified = 0;
   char curr_dir[_POSIX_PATH_MAX] = {0};
@@ -73,14 +75,58 @@ int main(int argc, char **(argv)) {
 	  strcpy(d_args->curr_dir, curr_dir);
   // End of args thread argument struct creation
   pthread_t tid_dir;
+  // Call a thread to process the top level directory and wait for it to complete
   pthread_create(&tid_dir, NULL, process_dir, (void*)d_args);
+  pthread_join(tid_dir, NULL);
+  // Sort the aggregated data structure
+  sort(big_db, column_to_sort(argv), determine_data_type(column_to_sort(argv)),0, BIG_LINE_COUNTER-1);
+  
+  int is_output_specified = 0;
+  int j;
+  int output_index = 0;
+  for(j = 0;j < argc; j++){
+   if(strcmp(argv[j], "-o") == 0){
+	is_output_specified = 1;
+	output_index = j + 1;
+  }	
+  }
+  char file_path[50];
+  if(is_output_specified){
+ 	strcpy(file_path, argv[output_index]);
+	mkdir(argv[output_index], 0700);
+  }
+  else{
+	// If no output directory is given, process in same directory as files
+      int is_directory_specified = 0;
+      int p;
+      for(p = 0; p < argc; p++){
+        if(strcmp(argv[p],"-d") == 0)
+          is_directory_specified = 1;
+       }
+       if(is_directory_specified)	
+         strcpy(file_path,argv[4]);
+       else{
+           char curr_dir[_POSIX_PATH_MAX] = {0}; 
+	   getcwd(curr_dir,255);
+	   strcpy(file_path,curr_dir);
+	}
+  }
+  char buffer[100];
+  strcat(file_path, "/");
+  strcat(file_path, buffer);
+  strcat(file_path,"-sorted-");
+  strcat(file_path,argv[2]);
+  strcat(file_path,".csv");
+  print_to_csv(argv, big_db, BIG_LINE_COUNTER, file_path, first_line);
+  
+
   printf("Metadata Summary\n");
   printf("----------------------------------------------------\n");
   printf("Initial TID: %d\n", INIT_TID);
   printf("tid's of all child threads: ");
   fflush (stdout);           
   
-  printf("\nTotal number of processes: %d\n", TOTAL_THREADS);
+  printf("\nTotal number of threads: %d\n", TOTAL_THREADS);
   printf("----------------------------------------------------\n");
   
   //Exit program
@@ -164,6 +210,7 @@ void *process_dir(void *args){
 	  // Create a thread that will sort the csv
 	  pthread_t tid_csv;
 	  pthread_create(&tid_csv, NULL, process_csv, (void*)t_args);
+	  pthread_join(tid_csv, NULL);
 	  // tid_list = (pthread_t*)realloc(tid_list, sizeof(tid_list) + sizeof(pthread_t));
 	  continue; //Continue processing
     } // End of .csv processing
@@ -197,6 +244,7 @@ void *process_dir(void *args){
 	    strcpy(new_d_args->curr_dir, d_args->curr_dir);
         // End of args thread argument struct creation
         pthread_create(&tid_dir, NULL, process_dir, (void*)new_d_args);
+        pthread_join(tid_dir, NULL);
 	    continue;
      }
      else{
@@ -204,11 +252,14 @@ void *process_dir(void *args){
  	 }
     } // End of directory checking
   } // End of Directory traversal
-
+#ifdef SYS_gettid
   //IF current process is child...exit
-  if(gettid() != INIT_TID){
+  if(syscall(SYS_gettid) != INIT_TID){
    exit(0);
   }
+#else
+#error "SYS_gettid broken"
+#endif
 }
 
 void *process_csv(void *args){
@@ -229,38 +280,7 @@ void *process_csv(void *args){
   // printf("Processing CSV\n");
   //Define variables here
   // Check if an output directory is given
-  int is_output_specified = 0;
-  int j;
-  int output_index = 0;
-  for(j = 0;j < t_args -> argc; j++){
-   if(strcmp(t_args -> argv[j], "-o") == 0){
-	is_output_specified = 1;
-	output_index = j + 1;
-  }	
-  }
-  char file_path[50];
-  if(is_output_specified){
- 	strcpy(file_path, t_args -> argv[output_index]);
-	mkdir(t_args -> argv[output_index], 0700);
-  }
-  else{
-	// If no output directory is given, process in same directory as files
-      int is_directory_specified = 0;
-      int p;
-      for(p = 0; p < t_args -> argc; p++){
-        if(strcmp(t_args -> argv[p],"-d") == 0)
-          is_directory_specified = 1;
-       }
-       if(is_directory_specified)	
-         strcpy(file_path,t_args ->argv[4]);
-       else{
-           char curr_dir[_POSIX_PATH_MAX] = {0}; 
-	   getcwd(curr_dir,255);
-	   strcpy(file_path,curr_dir);
-	}
-  }
-  char *first_line;
-  strcat(file_path, "/");
+
   // printf("%s\n",file_path);
   char delims[] = ",";
   // data_row **db = (data_row**)malloc(sizeof(data_row)); // 1 data row
@@ -369,11 +389,7 @@ void *process_csv(void *args){
 	   break;
         buffer[i] = t_args ->file_name[i];
   }
-  strcat(file_path, buffer);
-  strcat(file_path,"-sorted-");
-  strcat(file_path,t_args ->argv[2]);
-  strcat(file_path,".csv");
-  // print_to_csv(t_args ->argv, big_db, line_counter, file_path, first_line);
+  
 }
 
 
