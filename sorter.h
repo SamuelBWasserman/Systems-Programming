@@ -23,7 +23,6 @@ typedef struct thread_args{
     int argc; // Command line argc
     char **(argv); // Command line argv
     FILE *csv_file; // Pointer to the CSV file to add
-    char *file_name; // String name of the file to read
 } thread_args;
 
 

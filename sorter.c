@@ -12,8 +12,6 @@
 #include <sys/syscall.h>
 
 
-//TODO: MERGESORT HUGE ARRAY AND IMPLEMENT JOINING
-
 // GLOBALS
 // Will lock total_num_threads to increment
 pthread_mutex_t MUTEX = PTHREAD_MUTEX_INITIALIZER;
@@ -74,7 +72,7 @@ int main(int argc, char **(argv)) {
 	  d_args->argv[arg_count] = (char *)malloc(sizeof(char)*strlen(argv[arg_count]));
 	  strcpy(d_args->argv[arg_count], argv[arg_count]);
 	}
-	d_args->argv = argv; // WHY IS THIS NECESSARY?
+  d_args->curr_dir = (char *)malloc(sizeof(char)*strlen(curr_dir));
 	strcpy(d_args->curr_dir, curr_dir);
 
   // Spawn new threads to process the top lvl dir and wait for completion
@@ -116,10 +114,7 @@ int main(int argc, char **(argv)) {
   }
 
   // Construct the output file path
-  char buffer[100];
-  strcat(file_path, "/");
-  strcat(file_path, buffer);
-  strcat(file_path,"-sorted-");
+  strcat(file_path, "/AllFiles-sorted-");
   strcat(file_path,argv[2]);
   strcat(file_path,".csv");
 
@@ -213,11 +208,7 @@ void *process_dir(void *args){
 	      t_args->argv[arg_count] = (char *)malloc(sizeof(char)*strlen(d_args->argv[arg_count]));
 	      strcpy(t_args->argv[arg_count], d_args->argv[arg_count]);
 	    }
-	    t_args->argv = d_args->argv; // WHY ARE YOU DOING THIS?
 	    t_args->csv_file = csv_file;
-	    // Malloc enough size for filename and copy value
-	    t_args -> file_name = (char *) malloc(sizeof(char)*strlen(entry->d_name));
-	    strcpy(t_args->file_name, entry->d_name);
 	  
 	    // Create a thread that will sort the csv
 	    pthread_t tid_csv;
@@ -250,10 +241,9 @@ void *process_dir(void *args){
 	      for(arg_count = 0 ;arg_count < d_args->argc;arg_count++){
 	        new_d_args->argv[arg_count] = (char *)malloc(sizeof(char)* strlen(d_args->argv[arg_count]));
 	        strcpy(new_d_args->argv[arg_count], d_args->argv[arg_count]);
-	      }
-	      new_d_args->argv = d_args->argv; //STILL DON'T GET THIS
-	      // Malloc enough size for filename and copy value
-	      strcpy(new_d_args->curr_dir, d_args->curr_dir); // YOU NEVER MALLOC THIS
+	      }  
+        new_d_args->curr_dir = (char *)malloc(sizeof(char)*strlen(d_args->curr_dir));
+	      strcpy(new_d_args->curr_dir, d_args->curr_dir);
         
         // Create the thread for a new subdir
         pthread_create(&tid_dir, NULL, process_dir, (void*)new_d_args);
@@ -265,15 +255,15 @@ void *process_dir(void *args){
     } // End of directory checking
   } // End of Directory traversal
 
-// WHAT IS THIS?
-#ifdef SYS_gettid
-  //IF current process is child...exit
-  if(syscall(SYS_gettid) != INIT_TID){
-   exit(0);
-  }
-#else
-#error "SYS_gettid broken"
-#endif
+  // WHAT IS THIS?
+  #ifdef SYS_gettid
+    //IF current process is child...exit
+    if(syscall(SYS_gettid) != INIT_TID){
+      exit(0);
+    }
+  #else
+    #error "SYS_gettid broken"
+  #endif
 } // End of Process CSV
 
 void *process_csv(void *args){
@@ -321,13 +311,13 @@ void *process_csv(void *args){
     
     //IF first char is ',' in the line
     if(line[0] == ','){
-             char null_val[15];
-	     char templine[600];
-             sprintf(null_val, "NULL_VALUE%d", line_counter);
-	     strcpy(templine,null_val);
-	     templine[strlen(null_val)] = '\0';
-	     strcat(templine, line);
-	     strcpy(line, templine);
+      char null_val[15];
+	    char templine[600];
+      sprintf(null_val, "NULL_VALUE%d", line_counter);
+	    strcpy(templine,null_val);
+	    templine[strlen(null_val)] = '\0';
+	    strcat(templine, line);
+	    strcpy(line, templine);
     }
 
     //IF ",," exists in the line
@@ -368,17 +358,17 @@ void *process_csv(void *args){
 	      strcat(buffer, ",\0");
         strcat(buffer, word);
 	      strcat(buffer, "\0");
-        big_db[line_counter]->col[word_counter] = (char *)malloc((strlen(buffer) + 1) * sizeof(char));
-	      strcpy(big_db[line_counter]->col[word_counter], buffer);
+        big_db[BIG_LINE_COUNTER]->col[word_counter] = (char *)malloc((strlen(buffer)+1)*sizeof(char));
+	      strcpy(big_db[BIG_LINE_COUNTER]->col[word_counter], buffer);
 	      word_counter++;
 	      word = strtok(NULL,",");
 	      continue;
       }
 
       // Allocate enough space for the string to be placed in the array
-      big_db[BIG_LINE_COUNTER]->col[word_counter] = (char *)malloc((strlen(word) + 1) * sizeof(char));
+      big_db[BIG_LINE_COUNTER]->col[word_counter] = (char *)malloc((strlen(word)+1)*sizeof(char));
       // Copy the string into the array and add trailing string ender
-      strcpy(big_db[line_counter]->col[word_counter], word);
+      strcpy(big_db[BIG_LINE_COUNTER]->col[word_counter], word);
       // Move to the next token
       word_counter++;
       word = strtok(NULL, delims);
@@ -386,22 +376,10 @@ void *process_csv(void *args){
     word_counter = 0;
     line_counter++;
     BIG_LINE_COUNTER++;
-    big_db = (data_row**)realloc(big_db, (sizeof(data_row) * (BIG_LINE_COUNTER + 1)));
+    big_db = (data_row**)realloc(big_db, (sizeof(data_row)*(BIG_LINE_COUNTER+1)));
     big_db[BIG_LINE_COUNTER] = (data_row*)malloc(sizeof(data_row));
     pthread_mutex_unlock(&DB_LOCK);
     pthread_mutex_unlock(&BIG_LINE_COUNTER_LOCK);
-  }
-
-  // TODO: I feel like we're not keeping this anymore
-  type_flag = determine_data_type(column_to_sort(t_args->argv));
-  int column = column_to_sort(t_args->argv);
-  sort(big_db,column,type_flag,0,line_counter-1);
-  char *buffer = (char *)malloc(sizeof(char)*strlen(t_args->file_name) - 3);
-  int i;
-  for(i=0;i<strlen(t_args->file_name);i++){
-  	if(t_args->file_name[i] == '.')
-	    break;
-    buffer[i] = t_args->file_name[i];
   }
 }
 
