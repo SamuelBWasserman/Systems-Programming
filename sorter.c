@@ -22,7 +22,7 @@ pthread_mutex_t BIG_LINE_COUNTER_LOCK;
 data_row **big_db;
 int BIG_LINE_COUNTER = 0;
 char *first_line;
-
+int tids[999999];
 
 int main(int argc, char **(argv)) {
 
@@ -32,6 +32,7 @@ int main(int argc, char **(argv)) {
   INIT_TID = pthread_self();
   DIR *directory;
   int is_directory_specified = 0;
+  int directory_index = 0;
   char curr_dir[_POSIX_PATH_MAX] = {0};
   // Print Metadata Summary
   printf("Metadata Summary\n");
@@ -45,8 +46,10 @@ int main(int argc, char **(argv)) {
   }
   int p;
   for(p = 0; p < argc; p++){
-  	if(strcmp(argv[p],"-d") == 0)
+  	if(strcmp(argv[p],"-d") == 0){
    		is_directory_specified = 1;
+   		directory_index = p + 1;
+   		}
   }
   // If direct not specified, use current directory
   if(!is_directory_specified){
@@ -55,8 +58,8 @@ int main(int argc, char **(argv)) {
   }
   else{
    if(argc >= 3){
-     strcat(curr_dir, argv[4]);
-     directory = opendir(argv[4]);
+     strcat(curr_dir, argv[directory_index]);
+     directory = opendir(argv[directory_index]);
     }
   }
   // Check for NULL
@@ -83,7 +86,6 @@ int main(int argc, char **(argv)) {
   pthread_t tid_dir;
   pthread_create(&tid_dir, NULL, process_dir, (void*)d_args);
   pthread_join(tid_dir, NULL);
-
   // Sort the aggregated data structure
   sort(big_db,column_to_sort(argv),determine_data_type(column_to_sort(argv)),0,BIG_LINE_COUNTER-1);
   
@@ -102,19 +104,10 @@ int main(int argc, char **(argv)) {
  	  strcpy(file_path, argv[output_index]);
 	  mkdir(argv[output_index], 0700);
   } else { // No output dir given; use working dir
-      int is_directory_specified = 0;
-      int p;
-      for(p = 0; p < argc; p++){
-        if(strcmp(argv[p],"-d") == 0)
-          is_directory_specified = 1;
-      }
-      if(is_directory_specified){	
-        strcpy(file_path,argv[4]);
-      } else{
           char curr_dir[_POSIX_PATH_MAX] = {0}; 
 	        getcwd(curr_dir,255);
 	        strcpy(file_path,curr_dir);
-	    }
+	    
   }
 
   // Construct the output file path
@@ -170,6 +163,7 @@ int determine_data_type(int column_to_sort){
 void *process_dir(void *args){
  // Increment thread count
   pthread_mutex_lock(&MUTEX);
+  tids[TOTAL_THREADS] = pthread_self();
   TOTAL_THREADS++;
   pthread_mutex_unlock(&MUTEX);
   /* Handles the processing for the directory */
@@ -199,8 +193,6 @@ void *process_dir(void *args){
 	    path = realpath(d_args->curr_dir, buf);
 	    strcat(buf, "/");
 	    strcat(buf, entry->d_name);
-	    printf("BUFFER: %s\n", buf);
-	    fflush(stdout);
 	    FILE *csv_file;
 	    csv_file = fopen(buf, "r");
 
@@ -218,7 +210,8 @@ void *process_dir(void *args){
 	    // Create a thread that will sort the csv
 	    pthread_t tid_csv;
 	    pthread_create(&tid_csv, NULL, process_csv, (void*)t_args);
-	    pthread_join(tid_csv, NULL);
+        pthread_join(tid_csv, NULL);
+        
 	    // tid_list = (pthread_t*)realloc(tid_list, sizeof(tid_list) + sizeof(pthread_t));
 	    continue; //Continue processing
     } // End of .csv processing
@@ -253,6 +246,7 @@ void *process_dir(void *args){
         
         // Create the thread for a new subdir
         pthread_create(&tid_dir, NULL, process_dir, (void*)new_d_args);
+        
         pthread_join(tid_dir, NULL);
 	      continue;
       } else {
@@ -274,6 +268,7 @@ void *process_csv(void *args){
   
   // Increment thread count
   pthread_mutex_lock(&MUTEX);
+  tids[TOTAL_THREADS] = pthread_self();
   TOTAL_THREADS++;
   pthread_mutex_unlock(&MUTEX);
   
@@ -300,9 +295,11 @@ void *process_csv(void *args){
     int i;
     if(line_counter < 0){
       line_counter++;
-      first_line = (char *) malloc(sizeof(char)*strlen(line)+1);
-      strcpy(first_line,line);
-      if(!(is_csv_correct(first_line))){
+      if(first_line == NULL){
+        first_line = (char *) malloc(sizeof(char)*strlen(line)+1);
+        strcpy(first_line,line);
+      }
+      if(!(is_csv_correct(line))){
         printf("Incorrect CSV");
         fflush(stdout);
         return;

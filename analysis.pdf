@@ -1,0 +1,16 @@
+Analysis
+--------
+Test directory with 3 nested directories and 8 CSV's.
+
+MultiThreaded
+---------
+real	0m2.419s
+user	0m0.816s
+sys	0m0.208s
+
+MultiProcess
+------------
+real	0m2.419s
+user	0m0.816s
+sys	0m0.208s
+
