@@ -1,0 +1,22 @@
+Design:
+We traverse the directory, forking on CSV's and directories, and call the code from project 0 to handle CSV's.
+We fixed the mergesort from last project and string handling is fixed.
+
+Assumptions:
+We assume that a correct CSV is a csv that ends with .csv and has 28 columns.
+We assume that the column headers are the same as movie_metadata.csv from Project 0.
+We assume that the command line parameters are in the order -c -d -o always even if one or more are missing.
+
+Difficulties:
+It was difficult to count the number of processes and traverse directories.
+
+Testing:
+We created directories using the csv from the last project modified for size etc.
+
+Extra Credit:
+N/A
+
+Using our code:
+We ran our code with
+gcc sorter.c -o sorter
+./sorter -c (column) -d (directory) -o (output_directory)
