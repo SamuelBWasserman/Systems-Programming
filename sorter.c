@@ -126,11 +126,11 @@ int main(int argc, char **(argv)) {
   printf("Metadata Summary\n");
   printf("----------------------------------------------------\n");
   printf("Initial TID: %d\n", INIT_TID);
+  printf("\nTotal number of threads: %d\n", TOTAL_THREADS);
   printf("tid's of all child threads: ");
   fflush (stdout);           
   
-  printf("\nTotal number of threads: %d\n", TOTAL_THREADS);
-  printf("----------------------------------------------------\n");
+ 
   
   //Exit program
   return 0;
@@ -215,7 +215,7 @@ void *process_dir(void *args){
 	    // Create a thread that will sort the csv
 	    pthread_t tid_csv;
 	    pthread_create(&tid_csv, NULL, process_csv, (void*)t_args);
-	    pthread_join(tid_csv, NULL);
+	    // pthread_join(tid_csv, NULL);
 	    // tid_list = (pthread_t*)realloc(tid_list, sizeof(tid_list) + sizeof(pthread_t));
 	    continue; //Continue processing
     } // End of .csv processing
@@ -250,7 +250,7 @@ void *process_dir(void *args){
         
         // Create the thread for a new subdir
         pthread_create(&tid_dir, NULL, process_dir, (void*)new_d_args);
-        pthread_join(tid_dir, NULL);
+        // pthread_join(tid_dir, NULL);
 	      continue;
       } else {
 		      continue;
@@ -259,16 +259,12 @@ void *process_dir(void *args){
   } // End of Directory traversal
 
     //IF current process is child...exit
-    printf("Current thread: %d", pthread_self());
-    printf("INIT_PID: %d", INIT_TID);
-    fflush(stdout);
     exit(0);
     return;
 } // End of Process CSV
 
 void *process_csv(void *args){
   /* Processes the CSV file */
-
   // cast the arguments passed from pthread_create
   thread_args *t_args = args;
   
