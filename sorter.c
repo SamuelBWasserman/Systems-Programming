@@ -29,7 +29,7 @@ int main(int argc, char **(argv)) {
   //Intialize Variables
   big_db = (data_row**)malloc(sizeof(data_row)); // 1 data row
   argc = argc; // WHAT?
-  INIT_TID = syscall(SYS_gettid);
+  INIT_TID = pthread_self();
   DIR *directory;
   int is_directory_specified = 0;
   char curr_dir[_POSIX_PATH_MAX] = {0};
@@ -65,20 +65,21 @@ int main(int argc, char **(argv)) {
   
   // Creates a structure to hold the arguments needed for process_CSV to pass to the thread
   directory_args *d_args = (directory_args *)malloc(sizeof(directory_args));
+  d_args->argv = (char **)malloc(sizeof(char **)*argc);
   d_args->argc = argc;
 	// Malloc enough size for argv array and copy values
   int arg_count;
 	for(arg_count = 0 ;arg_count < argc;arg_count ++){
-	  d_args->argv[arg_count] = (char *)malloc(sizeof(char)*strlen(argv[arg_count]));
+	  d_args->argv[arg_count] = (char *)malloc(sizeof(char)*100);
 	  strcpy(d_args->argv[arg_count], argv[arg_count]);
 	}
-  d_args->curr_dir = (char *)malloc(sizeof(char)*strlen(curr_dir));
-	strcpy(d_args->curr_dir, curr_dir);
+  
+  strcpy(d_args->curr_dir, curr_dir);
 
   // Spawn new threads to process the top lvl dir and wait for completion
   pthread_t tid_dir;
   pthread_create(&tid_dir, NULL, process_dir, (void*)d_args);
-  pthread_join(tid_dir, NULL);
+  //pthread_join(tid_dir, NULL);
 
   // Sort the aggregated data structure
   sort(big_db,column_to_sort(argv),determine_data_type(column_to_sort(argv)),0,BIG_LINE_COUNTER-1);
@@ -202,10 +203,11 @@ void *process_dir(void *args){
 
       // Create and initialize thread args from dir args
 	    t_args->argc = d_args->argc;
+	    t_args->argv = (char **)malloc(sizeof(char **)*d_args->argc);
 	    // Copy values from dir args to thread args
 	    int arg_count;
 	    for(arg_count = 0 ;arg_count < d_args->argc;arg_count ++){
-	      t_args->argv[arg_count] = (char *)malloc(sizeof(char)*strlen(d_args->argv[arg_count]));
+	      t_args->argv[arg_count] = (char *)malloc(sizeof(char)*100);
 	      strcpy(t_args->argv[arg_count], d_args->argv[arg_count]);
 	    }
 	    t_args->csv_file = csv_file;
@@ -234,15 +236,16 @@ void *process_dir(void *args){
         strcat (d_args->curr_dir, "/");
 		    strcat (d_args->curr_dir, entry->d_name);
 		    path = realpath(d_args->curr_dir, buf);
+		    
 		    // Creates a structure to hold the arguments needed for process_CSV to pass to the thread
         directory_args *new_d_args = (directory_args *)malloc(sizeof(directory_args));
+          new_d_args->argv = (char **)malloc(sizeof(char **)*d_args->argc);
 	      new_d_args->argc = d_args->argc;
 	      int arg_count;
 	      for(arg_count = 0 ;arg_count < d_args->argc;arg_count++){
-	        new_d_args->argv[arg_count] = (char *)malloc(sizeof(char)* strlen(d_args->argv[arg_count]));
+	        new_d_args->argv[arg_count] = (char *)malloc(sizeof(char)*100);
 	        strcpy(new_d_args->argv[arg_count], d_args->argv[arg_count]);
 	      }  
-        new_d_args->curr_dir = (char *)malloc(sizeof(char)*strlen(d_args->curr_dir));
 	      strcpy(new_d_args->curr_dir, d_args->curr_dir);
         
         // Create the thread for a new subdir
@@ -255,15 +258,12 @@ void *process_dir(void *args){
     } // End of directory checking
   } // End of Directory traversal
 
-  // WHAT IS THIS?
-  #ifdef SYS_gettid
     //IF current process is child...exit
-    if(syscall(SYS_gettid) != INIT_TID){
-      exit(0);
-    }
-  #else
-    #error "SYS_gettid broken"
-  #endif
+    printf("Current thread: %d", pthread_self());
+    printf("INIT_PID: %d", INIT_TID);
+    fflush(stdout);
+    exit(0);
+    return;
 } // End of Process CSV
 
 void *process_csv(void *args){
@@ -381,6 +381,8 @@ void *process_csv(void *args){
     pthread_mutex_unlock(&DB_LOCK);
     pthread_mutex_unlock(&BIG_LINE_COUNTER_LOCK);
   }
+  exit(0);
+  return;
 }
 
 

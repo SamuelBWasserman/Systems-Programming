@@ -2,11 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <sys/stat.h>
-#include <pthread.h>
 #include <sys/syscall.h>
 // For the movie data set I counted 28 columns, but for a general CSV,
 // I would need the # of columns as meta data.
