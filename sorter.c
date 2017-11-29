@@ -33,8 +33,11 @@ int main(int argc, char **(argv)) {
   DIR *directory;
   int is_directory_specified = 0;
   char curr_dir[_POSIX_PATH_MAX] = {0};
-
-
+  // Print Metadata Summary
+  printf("Metadata Summary\n");
+  printf("----------------------------------------------------\n");
+  printf("Initial TID: %d\n", INIT_TID);
+  printf("tid's of all child threads: ");
   // Check command line args
   if (argc < 2 || argc > 7) {
     printf("invalid arguments\n");
@@ -75,11 +78,11 @@ int main(int argc, char **(argv)) {
 	}
   
   strcpy(d_args->curr_dir, curr_dir);
-
+  big_db = (data_row**)malloc(sizeof(data_row)); // 1 data row
   // Spawn new threads to process the top lvl dir and wait for completion
   pthread_t tid_dir;
   pthread_create(&tid_dir, NULL, process_dir, (void*)d_args);
-  //pthread_join(tid_dir, NULL);
+  pthread_join(tid_dir, NULL);
 
   // Sort the aggregated data structure
   sort(big_db,column_to_sort(argv),determine_data_type(column_to_sort(argv)),0,BIG_LINE_COUNTER-1);
@@ -118,20 +121,12 @@ int main(int argc, char **(argv)) {
   strcat(file_path, "/AllFiles-sorted-");
   strcat(file_path,argv[2]);
   strcat(file_path,".csv");
-
+  printf("\nTotal number of threads: %d\n", TOTAL_THREADS);
+  fflush (stdout);
   // Construct output CSV file
   print_to_csv(argv,big_db,BIG_LINE_COUNTER,file_path,first_line);
   
-  // Print Metadata Summary
-  printf("Metadata Summary\n");
-  printf("----------------------------------------------------\n");
-  printf("Initial TID: %d\n", INIT_TID);
-  printf("\nTotal number of threads: %d\n", TOTAL_THREADS);
-  printf("tid's of all child threads: ");
-  fflush (stdout);           
-  
- 
-  
+
   //Exit program
   return 0;
 }
@@ -173,8 +168,13 @@ int determine_data_type(int column_to_sort){
 }
 
 void *process_dir(void *args){
+ // Increment thread count
+  pthread_mutex_lock(&MUTEX);
+  TOTAL_THREADS++;
+  pthread_mutex_unlock(&MUTEX);
   /* Handles the processing for the directory */
-
+  printf("%d, ", pthread_self());
+  fflush(stdout);
   // cast the arguments passed from pthread_create
   directory_args *d_args = args;
   DIR *directory = opendir(d_args->curr_dir);
@@ -182,10 +182,11 @@ void *process_dir(void *args){
   struct dirent *entry;
   char buf[PATH_MAX];
   path = realpath(d_args->curr_dir, buf);
-  
+  //printf("%s\n", d_args->curr_dir);
+  //fflush(stdout);
   // Begin traversing directory
   while((entry = readdir(directory)) != NULL){
-  
+   
     // If the current file is a csv, create a new thread to sort
     if(strstr(entry->d_name,".csv") != NULL){
       // Make sure we don't sort for already sorted CSV files that exist in the same dir
@@ -195,9 +196,11 @@ void *process_dir(void *args){
       
       // Creates a structure to hold the arguments needed for process_CSV to pass to the thread
       thread_args *t_args = (thread_args *)malloc(sizeof(thread_args));
-      strcat(d_args->curr_dir, "/");
-      strcat(d_args->curr_dir, entry->d_name);
 	    path = realpath(d_args->curr_dir, buf);
+	    strcat(buf, "/");
+	    strcat(buf, entry->d_name);
+	    printf("BUFFER: %s\n", buf);
+	    fflush(stdout);
 	    FILE *csv_file;
 	    csv_file = fopen(buf, "r");
 
@@ -215,7 +218,7 @@ void *process_dir(void *args){
 	    // Create a thread that will sort the csv
 	    pthread_t tid_csv;
 	    pthread_create(&tid_csv, NULL, process_csv, (void*)t_args);
-	    // pthread_join(tid_csv, NULL);
+	    pthread_join(tid_csv, NULL);
 	    // tid_list = (pthread_t*)realloc(tid_list, sizeof(tid_list) + sizeof(pthread_t));
 	    continue; //Continue processing
     } // End of .csv processing
@@ -233,24 +236,24 @@ void *process_dir(void *args){
       if(S_ISDIR(s.st_mode)){
         // Create a thread and process
         pthread_t tid_dir;
-        strcat (d_args->curr_dir, "/");
-		    strcat (d_args->curr_dir, entry->d_name);
-		    path = realpath(d_args->curr_dir, buf);
+        directory_args *new_d_args = (directory_args *)malloc(sizeof(directory_args));
+        strcpy(new_d_args->curr_dir, d_args->curr_dir);
+        strcat (new_d_args->curr_dir, "/");
+		    strcat (new_d_args->curr_dir, entry->d_name);
+		    path = realpath(new_d_args->curr_dir, buf);
 		    
 		    // Creates a structure to hold the arguments needed for process_CSV to pass to the thread
-        directory_args *new_d_args = (directory_args *)malloc(sizeof(directory_args));
           new_d_args->argv = (char **)malloc(sizeof(char **)*d_args->argc);
 	      new_d_args->argc = d_args->argc;
 	      int arg_count;
 	      for(arg_count = 0 ;arg_count < d_args->argc;arg_count++){
 	        new_d_args->argv[arg_count] = (char *)malloc(sizeof(char)*100);
 	        strcpy(new_d_args->argv[arg_count], d_args->argv[arg_count]);
-	      }  
-	      strcpy(new_d_args->curr_dir, d_args->curr_dir);
+	      }
         
         // Create the thread for a new subdir
         pthread_create(&tid_dir, NULL, process_dir, (void*)new_d_args);
-        // pthread_join(tid_dir, NULL);
+        pthread_join(tid_dir, NULL);
 	      continue;
       } else {
 		      continue;
@@ -259,11 +262,12 @@ void *process_dir(void *args){
   } // End of Directory traversal
 
     //IF current process is child...exit
-    exit(0);
     return;
 } // End of Process CSV
 
 void *process_csv(void *args){
+  printf("%d, ", pthread_self());
+  fflush(stdout);
   /* Processes the CSV file */
   // cast the arguments passed from pthread_create
   thread_args *t_args = args;
@@ -284,13 +288,13 @@ void *process_csv(void *args){
   // printf("%s\n",file_path);
   char delims[] = ",";
   // data_row **db = (data_row**)malloc(sizeof(data_row)); // 1 data row
-  big_db[BIG_LINE_COUNTER] = (data_row*)malloc(sizeof(data_row));
+  big_db[BIG_LINE_COUNTER] = (data_row*)malloc(sizeof(data_row)); // 1 data row
   char line[600]; // one line from the file
   int line_counter = -1; // count what line we're on to keep track of the struct array
   int word_counter = 0; // keep track of what word were on for assignment in the struct
   int type_flag = 0; // 0:STRING, 1:INT, 2:FLOAT
 
-  while(fgets(line, 600, t_args -> csv_file) != NULL){
+  while(fgets(line, 600, t_args->csv_file) != NULL){
   	pthread_mutex_lock(&DB_LOCK);
     pthread_mutex_lock(&BIG_LINE_COUNTER_LOCK);
     int i;
@@ -300,8 +304,11 @@ void *process_csv(void *args){
       strcpy(first_line,line);
       if(!(is_csv_correct(first_line))){
         printf("Incorrect CSV");
+        fflush(stdout);
         return;
       }
+      pthread_mutex_unlock(&DB_LOCK);
+      pthread_mutex_unlock(&BIG_LINE_COUNTER_LOCK);
       continue;
     }
     
@@ -340,6 +347,7 @@ void *process_csv(void *args){
     // Tokenize until end of line
     char *word;
     word = strtok(line, delims);
+    
     while(word){
       //IF string has commas in the middle somwhere
 	    if(word[0] == '\"'){
@@ -377,8 +385,7 @@ void *process_csv(void *args){
     pthread_mutex_unlock(&DB_LOCK);
     pthread_mutex_unlock(&BIG_LINE_COUNTER_LOCK);
   }
-  exit(0);
-  return;
+   return;
 }
 
 
